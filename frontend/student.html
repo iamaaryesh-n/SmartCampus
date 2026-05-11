@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SmartCampus — Student Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #f7f6f2;
+  --surface:    #ffffff;
+  --border:     #e8e5de;
+  --text:       #1a1917;
+  --muted:      #7a7873;
+  --student:    #1a6b4a;
+  --studentbg:  #e8f5ef;
+  --studentbdr: #a8d9c0;
+  --faculty:    #2d52a0;
+  --facultybg:  #e8eef9;
+  --facultybdr: #a8bde8;
+  --admin:      #8a3a1a;
+  --adminbg:    #faeee8;
+  --indigo:     #5b54e8;
+  --indigobg:   #eeedfb;
+  --indigobdr:  #d4d1f7;
+  --warning:    #92570a;
+  --warningbg:  #fef3e2;
+  --warningbdr: #f5cc80;
+  --danger:     #991b1b;
+  --dangerbg:   #fef2f2;
+  --dangerbdr:  #fca5a5;
+  --fh: 'Plus Jakarta Sans', sans-serif;
+  --fm: 'JetBrains Mono', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--fh);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, #c9c6bd 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Nav ── */
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 40px;
+  background: rgba(247,246,242,0.9);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+.brand-mark {
+  width: 32px; height: 32px;
+  background: var(--text);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.brand-name {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.4px;
+}
+
+.brand-name span { color: var(--indigo); }
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-chip {
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--student);
+  background: var(--studentbg);
+  border: 1px solid var(--studentbdr);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.nav-home {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.nav-home:hover { color: var(--text); border-color: #ccc9c0; }
+
+/* ── Layout ── */
+.layout {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: calc(100vh - 57px);
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  padding: 28px 16px;
+  border-right: 1px solid var(--border);
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 57px;
+  height: calc(100vh - 57px);
+  overflow-y: auto;
+}
+
+.sidebar-label {
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 10px;
+  margin-bottom: 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+  margin-bottom: 2px;
+  user-select: none;
+}
+
+.nav-item:hover {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.nav-item.active {
+  background: var(--surface);
+  color: var(--student);
+  border-color: var(--studentbdr);
+  font-weight: 600;
+}
+
+.nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+/* ── Main Content ── */
+.main {
+  flex: 1;
+  padding: 32px 40px;
+  overflow-y: auto;
+  max-width: 960px;
+}
+
+/* ── Sections ── */
+.section { display: none; }
+.section.active { display: block; animation: fadein 0.25s ease; }
+
+@keyframes fadein {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Page header ── */
+.page-header { margin-bottom: 28px; }
+
+.page-title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  color: var(--text);
+  margin-bottom: 5px;
+}
+
+.page-sub {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ── Card ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 24px;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-title svg { width: 16px; height: 16px; color: var(--student); }
+
+/* ── Search bar ── */
+.search-wrap {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-family: var(--fh);
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search-input:focus { border-color: var(--studentbdr); background: var(--surface); }
+.search-input::placeholder { color: var(--muted); }
+
+.btn {
+  padding: 10px 18px;
+  border-radius: 9px;
+  font-family: var(--fh);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  transition: all 0.15s;
+}
+
+.btn:hover { border-color: #ccc9c0; background: var(--bg); }
+
+.btn.primary {
+  background: var(--student);
+  color: #fff;
+  border-color: var(--student);
+}
+
+.btn.primary:hover { background: #155c3e; border-color: #155c3e; }
+
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ── Faculty result cards ── */
+.faculty-results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.faculty-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.faculty-chip:hover {
+  background: var(--surface);
+  border-color: var(--studentbdr);
+  transform: translateX(2px);
+}
+
+.faculty-chip-left { display: flex; align-items: center; gap: 12px; }
+
+.faculty-avatar {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: var(--facultybg);
+  border: 1px solid var(--facultybdr);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--faculty);
+  flex-shrink: 0;
+}
+
+.faculty-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.faculty-dept { font-size: 12px; color: var(--muted); margin-top: 1px; }
+
+.faculty-chip-action {
+  font-family: var(--fm);
+  font-size: 11px;
+  color: var(--student);
+  background: var(--studentbg);
+  border: 1px solid var(--studentbdr);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+/* ── Where Now result ── */
+.where-now-result {
+  margin-top: 16px;
+  padding: 18px 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.where-now-result.in-class  { border-color: var(--studentbdr); background: var(--studentbg); }
+.where-now-result.free      { border-color: var(--indigobdr);  background: var(--indigobg); }
+.where-now-result.absent    { border-color: var(--dangerbdr);  background: var(--dangerbg); }
+.where-now-result.no-class  { border-color: var(--border);     background: var(--bg); }
+
+.wnr-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.wnr-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.in-class  .wnr-dot { background: var(--student); box-shadow: 0 0 0 3px rgba(26,107,74,0.15); }
+.free      .wnr-dot { background: var(--indigo);  box-shadow: 0 0 0 3px rgba(91,84,232,0.15); }
+.absent    .wnr-dot { background: var(--danger);  box-shadow: 0 0 0 3px rgba(153,27,27,0.15); }
+.no-class  .wnr-dot { background: var(--muted); }
+
+.wnr-status {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.wnr-detail {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.wnr-class-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.wnr-stat {
+  background: rgba(255,255,255,0.7);
+  border: 1px solid rgba(255,255,255,0.9);
+  border-radius: 9px;
+  padding: 10px 12px;
+}
+
+.wnr-stat-label { font-family: var(--fm); font-size: 10px; color: var(--muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 1px; }
+.wnr-stat-value { font-size: 14px; font-weight: 700; color: var(--text); }
+
+/* ── Timetable grid ── */
+.tt-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  align-items: flex-end;
+}
+
+.field-group { display: flex; flex-direction: column; gap: 5px; }
+
+.field-label {
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+select {
+  padding: 9px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-family: var(--fh);
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+  min-width: 120px;
+}
+
+select:focus { border-color: var(--studentbdr); background: var(--surface); }
+
+.tt-grid {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.tt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  min-width: 600px;
+}
+
+.tt-table th {
+  background: var(--bg);
+  padding: 10px 12px;
+  text-align: left;
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.tt-table td {
+  padding: 11px 12px;
+  border-bottom: 1px solid rgba(232,229,222,0.6);
+  vertical-align: top;
+  color: var(--text);
+}
+
+.tt-table tr:last-child td { border-bottom: none; }
+
+.tt-table tbody tr:hover td { background: rgba(232,229,222,0.25); }
+
+.tt-day-header {
+  font-weight: 700;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.tt-slot-badge {
+  font-family: var(--fm);
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.tt-subject { font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.tt-code    { font-family: var(--fm); font-size: 11px; color: var(--muted); }
+
+.tt-faculty-link {
+  font-size: 12px;
+  color: var(--faculty);
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.tt-faculty-link:hover { text-decoration: underline; }
+
+.tt-batch {
+  font-family: var(--fm);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--indigobg);
+  color: var(--indigo);
+  border: 1px solid var(--indigobdr);
+  display: inline-block;
+  margin-left: 4px;
+}
+
+.tt-lab {
+  font-family: var(--fm);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--warningbg);
+  color: var(--warning);
+  border: 1px solid var(--warningbdr);
+  display: inline-block;
+  margin-left: 4px;
+}
+
+/* ── Free rooms ── */
+.rooms-controls {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+
+.rooms-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.rooms-col-title {
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.room-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.room-chip {
+  font-family: var(--fm);
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 7px;
+  background: var(--studentbg);
+  border: 1px solid var(--studentbdr);
+  color: var(--student);
+  font-weight: 500;
+}
+
+.room-chip.lab {
+  background: var(--warningbg);
+  border-color: var(--warningbdr);
+  color: var(--warning);
+}
+
+.room-chip.busy {
+  background: var(--bg);
+  border-color: var(--border);
+  color: var(--muted);
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+/* ── Faculty schedule modal ── */
+.modal-bg {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(26,25,23,0.45);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.modal-bg.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  width: 100%;
+  max-width: 740px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  animation: fadein 0.2s ease;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.14);
+}
+
+.modal-header {
+  padding: 20px 24px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.modal-title { font-size: 17px; font-weight: 700; color: var(--text); }
+.modal-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.modal-close {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.modal-close:hover { background: var(--dangerbg); border-color: var(--dangerbdr); }
+.modal-close svg { width: 14px; height: 14px; }
+
+.modal-body {
+  overflow-y: auto;
+  padding: 20px 24px;
+  flex: 1;
+}
+
+.free-slots-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #fff, #fbfaf7);
+}
+
+.free-slots-summary-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.free-slots-summary-sub {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.slot-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.legend-pill {
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: var(--bg);
+}
+
+.timeline-wrap {
+  display: grid;
+  gap: 12px;
+}
+
+.slot-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 122px 1fr;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(26,25,23,0.04);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  overflow: hidden;
+}
+
+.slot-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(26,25,23,0.08);
+}
+
+.slot-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--border);
+}
+
+.slot-card.free {
+  background: linear-gradient(180deg, #f5fbf8, #ffffff);
+  border-color: var(--studentbdr);
+}
+
+.slot-card.free::before {
+  background: linear-gradient(180deg, #27ae60, #1a6b4a);
+}
+
+.slot-card.busy {
+  background: linear-gradient(180deg, #fff8f8, #ffffff);
+  border-color: rgba(252, 165, 165, 0.9);
+}
+
+.slot-card.busy::before {
+  background: linear-gradient(180deg, #ef4444, #b91c1c);
+}
+
+.slot-card.ongoing {
+  background: linear-gradient(180deg, #f3f7ff, #ffffff);
+  border-color: #b7ccff;
+  box-shadow: 0 0 0 1px rgba(45,82,160,0.08), 0 14px 34px rgba(45,82,160,0.12);
+}
+
+.slot-card.ongoing::before {
+  background: linear-gradient(180deg, #2d52a0, #4f7cff);
+}
+
+.slot-card.ongoing::after {
+  content: '';
+  position: absolute;
+  inset: 8px 8px auto auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #2d52a0;
+  box-shadow: 0 0 0 6px rgba(45,82,160,0.12), 0 0 18px rgba(45,82,160,0.35);
+}
+
+.slot-card.past {
+  opacity: 0.55;
+  background: var(--cardbg);
+  border-color: var(--border);
+}
+
+.slot-card.past::before {
+  background: var(--border);
+}
+
+.slot-badge.past {
+  color: var(--muted);
+  background: var(--cardbg);
+  border-color: var(--border);
+}
+
+.timeline-current-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--fm);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+  background: var(--cardbg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 14px;
+  margin-bottom: 4px;
+}
+
+.slot-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.slot-number {
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.slot-time {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.slot-badge {
+  width: fit-content;
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.slot-badge.free {
+  color: var(--student);
+  background: var(--studentbg);
+  border-color: var(--studentbdr);
+}
+
+.slot-badge.busy {
+  color: var(--danger);
+  background: var(--dangerbg);
+  border-color: var(--dangerbdr);
+}
+
+.slot-badge.ongoing {
+  color: var(--faculty);
+  background: var(--facultybg);
+  border-color: var(--facultybdr);
+  box-shadow: 0 0 0 3px rgba(45,82,160,0.08);
+}
+
+.slot-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.slot-subject {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.35;
+}
+
+.slot-room {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  font-size: 12px;
+  color: var(--muted);
+  background: rgba(255,255,255,0.72);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 10px;
+}
+
+.slot-free-note {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.slot-occupied-list {
+  display: grid;
+  gap: 8px;
+}
+
+.slot-occupied-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.slot-occupied-item::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-top: 7px;
+  border-radius: 50%;
+  background: var(--faculty);
+  flex-shrink: 0;
+}
+
+.slot-occupied-text {
+  min-width: 0;
+}
+
+.slot-occupied-room {
+  font-family: var(--fm);
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* ── States ── */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--muted);
+}
+
+.empty-icon { font-size: 32px; margin-bottom: 10px; }
+.empty-text { font-size: 14px; }
+
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  padding: 16px 0;
+}
+
+.spinner {
+  width: 16px; height: 16px;
+  border: 2px solid var(--border);
+  border-top-color: var(--student);
+  border-radius: 50%;
+  animation: spin 0.65s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.error-msg {
+  padding: 12px 16px;
+  background: var(--dangerbg);
+  border: 1px solid var(--dangerbdr);
+  border-radius: 9px;
+  font-size: 13px;
+  color: var(--danger);
+  margin-top: 12px;
+}
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+  nav { padding: 14px 16px; }
+  .sidebar { display: none; }
+  .main { padding: 20px 16px; }
+  .rooms-grid { grid-template-columns: 1fr; }
+  .wnr-class-row { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a class="brand" href="landing.html">
+    <div class="brand-mark">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <rect x="2"  y="2"  width="6" height="6" rx="1.5" fill="white"/>
+        <rect x="10" y="2"  width="6" height="6" rx="1.5" fill="white" opacity="0.5"/>
+        <rect x="2"  y="10" width="6" height="6" rx="1.5" fill="white" opacity="0.5"/>
+        <rect x="10" y="10" width="6" height="6" rx="1.5" fill="white"/>
+      </svg>
+    </div>
+    <span class="brand-name">Smart<span>Campus</span></span>
+  </a>
+  <div class="nav-right">
+    <div class="nav-chip">Student Portal</div>
+    <a class="nav-home" href="landing.html">← Home</a>
+  </div>
+</nav>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-label">Navigation</div>
+
+    <div class="nav-item active" onclick="showSection(event, 'find-faculty')">
+      <svg viewBox="0 0 16 16" fill="none">
+        <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      Find Faculty
+    </div>
+
+    <div class="nav-item" onclick="showSection(event, 'my-timetable')">
+      <svg viewBox="0 0 16 16" fill="none">
+        <rect x="1.5" y="2.5" width="13" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M5 1.5v2M11 1.5v2M1.5 6.5h13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      My Timetable
+    </div>
+
+    <div class="nav-item" onclick="showSection(event, 'free-rooms')">
+      <svg viewBox="0 0 16 16" fill="none">
+        <rect x="1.5" y="3.5" width="13" height="10" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+        <path d="M6 3.5V14M1.5 8.5h13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      Free Rooms
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- ══ FIND FACULTY ══ -->
+    <div id="sec-find-faculty" class="section active">
+      <div class="page-header">
+        <div class="page-title">Find Faculty</div>
+        <div class="page-sub">Search for a faculty member and see where they are right now.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <svg viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="#1a6b4a" stroke-width="1.5"/><path d="M10.5 10.5L14 14" stroke="#1a6b4a" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Search by name
+        </div>
+        <div class="search-wrap">
+          <input class="search-input" id="facultySearchInput" type="text"
+                 placeholder="Type faculty name e.g. Sharma, Gupta…"
+                 oninput="onFacultyInput()"
+                 onkeydown="if(event.key==='Enter') searchFaculty()" />
+          <button class="btn primary" onclick="searchFaculty()">Search</button>
+        </div>
+        <div id="facultySearchResults"></div>
+      </div>
+
+      <!-- Where Now result -->
+      <div id="whereNowCard" style="display:none">
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="#1a6b4a" stroke-width="1.5"/><path d="M8 5v3.5l2 2" stroke="#1a6b4a" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Current Status
+          </div>
+          <div id="whereNowResult"></div>
+          <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn" id="viewScheduleBtn" onclick="viewFacultySchedule()">View Full Schedule</button>
+            <button class="btn" id="viewFreeSlotsBtn" onclick="viewFreeSlots()">See Free Slots Today</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ MY TIMETABLE ══ -->
+    <div id="sec-my-timetable" class="section">
+      <div class="page-header">
+        <div class="page-title">My Timetable</div>
+        <div class="page-sub">Select your branch, year, and section to view your full week schedule.</div>
+      </div>
+
+      <div class="card">
+        <div class="tt-controls">
+          <div class="field-group">
+            <div class="field-label">Branch</div>
+            <select id="ttBranch" onchange="onBranchChange()">
+              <option value="">Select branch</option>
+              <option value="BTech">B.Tech</option>
+              <option value="BCA">BCA</option>
+              <option value="MCA">MCA</option>
+              <option value="MBA">MBA</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Year</div>
+            <select id="ttYear" onchange="onYearChange()">
+              <option value="">Select year</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Section</div>
+            <select id="ttSection" onchange="loadTimetable()">
+              <option value="">Select section</option>
+            </select>
+          </div>
+        </div>
+        <div id="timetableArea">
+          <div class="empty-state">
+            <div class="empty-icon">📅</div>
+            <div class="empty-text">Select your branch, year and section above.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ FREE ROOMS ══ -->
+    <div id="sec-free-rooms" class="section">
+      <div class="page-header">
+        <div class="page-title">Free Rooms &amp; Labs</div>
+        <div class="page-sub">Find classrooms and labs that are free at any day and time slot.</div>
+      </div>
+
+      <div class="card">
+        <div class="rooms-controls">
+          <div class="field-group">
+            <div class="field-label">Day</div>
+            <select id="roomDay">
+              <option value="Monday">Monday</option>
+              <option value="Tuesday">Tuesday</option>
+              <option value="Wednesday">Wednesday</option>
+              <option value="Thursday">Thursday</option>
+              <option value="Friday">Friday</option>
+              <option value="Saturday">Saturday</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <div class="field-label">Slot</div>
+            <select id="roomSlot">
+              <option value="L1">L1 — 10:15–11:15</option>
+              <option value="L2">L2 — 11:15–12:15</option>
+              <option value="L3">L3 — 12:45–01:45</option>
+              <option value="L4">L4 — 01:45–02:45</option>
+              <option value="L5">L5 — 02:45–03:45</option>
+              <option value="L6">L6 — 03:45–04:45</option>
+            </select>
+          </div>
+          <button class="btn primary" onclick="loadFreeRooms()">Check Availability</button>
+        </div>
+        <div id="roomsResult">
+          <div class="empty-state">
+            <div class="empty-icon">🏫</div>
+            <div class="empty-text">Select a day and slot, then click Check Availability.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Faculty Schedule Modal -->
+<div class="modal-bg" id="scheduleModal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modalFacultyName">Faculty Schedule</div>
+        <div class="modal-sub">Full week timetable</div>
+      </div>
+      <div class="modal-close" onclick="document.getElementById('scheduleModal').classList.remove('open')">
+        <svg viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="#7a7873" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+// ── State ────────────────────────────────────────────────
+let activeFacultyId   = null;
+let activeFacultyName = '';
+let searchTimeout     = null;
+
+// Set today's day in free rooms selector
+(function() {
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const today = days[new Date().getDay()];
+  const sel = document.getElementById('roomDay');
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === today) { sel.selectedIndex = i; break; }
+  }
+  // Set current slot
+  const slots = { L1:['10:15','11:15'], L2:['11:15','12:15'], L3:['12:45','13:45'], L4:['13:45','14:45'], L5:['14:45','15:45'], L6:['15:45','16:45'] };
+  const now = new Date();
+  const hhmm = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  const slotSel = document.getElementById('roomSlot');
+  for (const [lbl, [s,e]] of Object.entries(slots)) {
+    if (hhmm >= s && hhmm < e) {
+      for (let i = 0; i < slotSel.options.length; i++) {
+        if (slotSel.options[i].value === lbl) { slotSel.selectedIndex = i; break; }
+      }
+      break;
+    }
+  }
+})();
+
+// ── Navigation ───────────────────────────────────────────
+function showSection(event, name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ── Helpers ──────────────────────────────────────────────
+function initials(name) {
+  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+}
+
+function showLoading(el) {
+  el.innerHTML = '<div class="loading"><div class="spinner"></div> Loading…</div>';
+}
+
+function showError(el, msg) {
+  el.innerHTML = `<div class="error-msg">⚠ ${msg}</div>`;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"]|'/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[ch]));
+}
+
+function getCurrentSlot() {
+  const slots = {
+    L1: ['10:15', '11:15'],
+    L2: ['11:15', '12:15'],
+    L3: ['12:45', '13:45'],
+    L4: ['13:45', '14:45'],
+    L5: ['14:45', '15:45'],
+    L6: ['15:45', '16:45']
+  };
+  const now = new Date();
+  const hhmm = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+  for (const [slot, [start, end]] of Object.entries(slots)) {
+    if (hhmm >= start && hhmm < end) return slot;
+  }
+  return null;
+}
+
+function getSlotTemporalStatus(slot, currentSlot) {
+  const slotOrder = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
+  if (!currentSlot) return 'unknown';
+  const ci = slotOrder.indexOf(currentSlot);
+  const si = slotOrder.indexOf(slot);
+  if (si < ci) return 'past';
+  if (si === ci) return 'current';
+  return 'future';
+}
+
+function renderFreeSlotsTimeline(day, freeSlots, scheduleRows = []) {
+  const slotOrder = ['L1', 'L2', 'L3', 'L4', 'L5', 'L6'];
+  const now = new Date();
+  const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
+  const isToday = day === currentDay;
+  const currentSlot = isToday ? getCurrentSlot() : null;
+  const currentTimeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  const scheduleBySlot = {};
+
+  for (const row of scheduleRows) {
+    if (!scheduleBySlot[row.slot]) scheduleBySlot[row.slot] = [];
+    scheduleBySlot[row.slot].push(row);
+  }
+
+  const freeSet = new Set(freeSlots || []);
+  const cards = slotOrder.map((slot, index) => {
+    const isFree = freeSet.has(slot);
+    const rows = scheduleBySlot[slot] || [];
+    const temporal = isToday ? getSlotTemporalStatus(slot, currentSlot) : 'unknown';
+
+    let status, statusLabel, detailLabel;
+    if (temporal === 'current' && !isFree) {
+      status = 'ongoing'; statusLabel = 'ONGOING'; detailLabel = 'Lecture in progress';
+    } else if (isFree) {
+      status = 'free'; statusLabel = 'FREE'; detailLabel = null;
+    } else if (temporal === 'past') {
+      status = 'past'; statusLabel = 'DONE'; detailLabel = 'Completed';
+    } else if (temporal === 'future') {
+      status = 'busy'; statusLabel = 'UPCOMING'; detailLabel = 'Upcoming lecture';
+    } else {
+      status = 'busy'; statusLabel = 'BUSY'; detailLabel = 'Lecture scheduled';
+    }
+
+    const time = CONFIG.TIME_SLOTS[slot] || '';
+
+    return `
+      <div class="slot-card ${status}">
+        <div class="slot-meta">
+          <div class="slot-number">Lecture ${index + 1}</div>
+          <div class="slot-time">${escapeHtml(slot)} · ${escapeHtml(time)}</div>
+          <div class="slot-badge ${status}">${statusLabel}</div>
+        </div>
+        <div class="slot-details">
+          ${status === 'free' ? `
+            <div class="slot-subject">No lecture scheduled</div>
+            <div class="slot-free-note">This slot is open for ${escapeHtml(day)}.</div>
+          ` : `
+            <div class="slot-subject">${detailLabel}</div>
+            ${rows.length ? `
+              <div class="slot-occupied-list">
+                ${rows.map(r => `
+                  <div class="slot-occupied-item">
+                    <div class="slot-occupied-text">
+                      <div class="slot-subject">${escapeHtml(r.subject_name || r.subject_code || '—')}</div>
+                      <div class="slot-occupied-room">${r.is_lab ? 'Lab' : 'Room'}: ${escapeHtml(r.is_lab ? (r.lab_code || '—') : (r.room_no || '—'))}</div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            ` : `
+              <div class="slot-free-note">No details available for this slot.</div>
+            `}
+          `}
+        </div>
+      </div>`;
+  }).join('');
+
+  const currentTimeNote = isToday
+    ? `<div class="timeline-current-time">🕐 Current time: ${currentTimeStr}${currentSlot ? ` &nbsp;·&nbsp; ${currentSlot} is ongoing` : ' &nbsp;·&nbsp; No active slot right now'}</div>`
+    : '';
+
+  return `
+    <div class="free-slots-summary">
+      <div>
+        <div class="free-slots-summary-title">${escapeHtml(day)} timeline</div>
+        <div class="free-slots-summary-sub">Statuses reflect real-time availability based on current time.</div>
+      </div>
+      <div class="slot-legend">
+        <span class="legend-pill" style="color:var(--student);background:var(--studentbg);border-color:var(--studentbdr)">🟢 FREE</span>
+        <span class="legend-pill" style="color:var(--faculty);background:var(--facultybg);border-color:var(--facultybdr)">🔵 ONGOING</span>
+        <span class="legend-pill" style="color:var(--danger);background:var(--dangerbg);border-color:var(--dangerbdr)">🔴 UPCOMING</span>
+        <span class="legend-pill" style="color:var(--muted);background:var(--cardbg);border-color:var(--border)">⚫ DONE</span>
+      </div>
+    </div>
+    ${currentTimeNote}
+    <div class="timeline-wrap">${cards}</div>`;
+}
+
+// ── Faculty Search ───────────────────────────────────────
+function onFacultyInput() {
+  clearTimeout(searchTimeout);
+  const q = document.getElementById('facultySearchInput').value.trim();
+  if (q.length >= 2) {
+    searchTimeout = setTimeout(searchFaculty, 400);
+  } else if (!q) {
+    document.getElementById('facultySearchResults').innerHTML = '';
+    document.getElementById('whereNowCard').style.display = 'none';
+  }
+}
+
+async function searchFaculty() {
+  const q = document.getElementById('facultySearchInput').value.trim();
+  if (!q) return;
+
+  const el = document.getElementById('facultySearchResults');
+  showLoading(el);
+  document.getElementById('whereNowCard').style.display = 'none';
+
+  const { ok, data } = await apiFetch(`${CONFIG.API.FACULTY_SEARCH}?q=${encodeURIComponent(q)}`);
+  if (!ok || !data.success) { showError(el, 'Search failed. Is the server running?'); return; }
+
+  const list = data.data;
+  if (!list.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">No faculty found. Try a different name.</div></div>';
+    return;
+  }
+
+  el.innerHTML = '<div class="faculty-results">' + list.map(f => `
+    <div class="faculty-chip" onclick="selectFaculty(${f.id}, '${f.full_name.replace(/'/g,"\\'")}')">
+      <div class="faculty-chip-left">
+        <div class="faculty-avatar">${initials(f.full_name)}</div>
+        <div>
+          <div class="faculty-name">${f.full_name}</div>
+          <div class="faculty-dept">${f.department || 'Faculty'}</div>
+        </div>
+      </div>
+      <div class="faculty-chip-action">Where now? →</div>
+    </div>`).join('') + '</div>';
+}
+
+async function selectFaculty(id, name) {
+  activeFacultyId   = id;
+  activeFacultyName = name;
+
+  const card = document.getElementById('whereNowCard');
+  const res  = document.getElementById('whereNowResult');
+  card.style.display = 'block';
+  showLoading(res);
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  const { ok, data } = await apiFetch(`${CONFIG.API.FACULTY_WHERE_NOW}/${id}/where-now`);
+  if (!ok || !data.success) { showError(res, 'Could not fetch status.'); return; }
+
+  const d = data.data;
+
+  if (d.status === 'absent') {
+    res.innerHTML = `
+      <div class="where-now-result absent">
+        <div class="wnr-header">
+          <div class="wnr-dot"></div>
+          <div class="wnr-status">${name} is absent today</div>
+        </div>
+        <div class="wnr-detail">${d.message}</div>
+      </div>`;
+    return;
+  }
+
+  if (d.status === 'no_class' || d.status === 'free') {
+    const cls = d.status === 'free' ? 'free' : 'no-class';
+    res.innerHTML = `
+      <div class="where-now-result ${cls}">
+        <div class="wnr-header">
+          <div class="wnr-dot"></div>
+          <div class="wnr-status">${name}</div>
+        </div>
+        <div class="wnr-detail">${d.message}</div>
+      </div>`;
+    return;
+  }
+
+  if (d.status === 'in_class') {
+    const classes = d.classes;
+    const c = classes[0];
+    res.innerHTML = `
+      <div class="where-now-result in-class">
+        <div class="wnr-header">
+          <div class="wnr-dot"></div>
+          <div class="wnr-status">${name} is in class right now</div>
+        </div>
+        <div class="wnr-class-row">
+          <div class="wnr-stat">
+            <div class="wnr-stat-label">Subject</div>
+            <div class="wnr-stat-value">${c.subject_name || c.subject_code || '—'}</div>
+          </div>
+          <div class="wnr-stat">
+            <div class="wnr-stat-label">Section</div>
+            <div class="wnr-stat-value">${c.section_name || '—'}</div>
+          </div>
+          <div class="wnr-stat">
+            <div class="wnr-stat-label">${c.is_lab ? 'Lab' : 'Room'}</div>
+            <div class="wnr-stat-value">${c.is_lab ? (c.lab_code || '—') : (c.room_no || '—')}</div>
+          </div>
+          <div class="wnr-stat">
+            <div class="wnr-stat-label">Slot</div>
+            <div class="wnr-stat-value">${d.slot} &nbsp; <span style="font-size:11px;color:var(--muted);font-family:var(--fm)">${CONFIG.TIME_SLOTS[d.slot] || ''}</span></div>
+          </div>
+        </div>
+        ${classes.length > 1 ? `<div style="margin-top:10px;font-size:12px;color:var(--muted)">+${classes.length-1} more class(es) at the same time</div>` : ''}
+      </div>`;
+  }
+}
+
+// ── Full Schedule Modal ──────────────────────────────────
+async function viewFacultySchedule() {
+  if (!activeFacultyId) return;
+  const modal = document.getElementById('scheduleModal');
+  const body  = document.getElementById('modalBody');
+  document.getElementById('modalFacultyName').textContent = activeFacultyName;
+  modal.classList.add('open');
+  showLoading(body);
+
+  const { ok, data } = await apiFetch(`${CONFIG.API.FACULTY_PUBLIC_SCHEDULE}/${activeFacultyId}/schedule`);
+  if (!ok || !data.success) { showError(body, 'Could not load schedule.'); return; }
+
+  const sched = data.data.schedule;
+  if (!sched.length) {
+    body.innerHTML = '<div class="empty-state"><div class="empty-text">No schedule found.</div></div>';
+    return;
+  }
+
+  // Group by day
+  const byDay = {};
+  for (const row of sched) {
+    if (!byDay[row.day]) byDay[row.day] = [];
+    byDay[row.day].push(row);
+  }
+
+  const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  let html = '<div class="tt-grid"><table class="tt-table"><thead><tr><th>Day</th><th>Slot</th><th>Time</th><th>Subject</th><th>Section</th><th>Room</th></tr></thead><tbody>';
+
+  for (const day of DAYS) {
+    if (!byDay[day]) continue;
+    byDay[day].forEach((r, i) => {
+      html += `<tr>
+        ${i === 0 ? `<td rowspan="${byDay[day].length}" style="font-weight:700;color:var(--text);border-right:1px solid var(--border)">${day}</td>` : ''}
+        <td><span class="tt-slot-badge">${r.slot}</span></td>
+        <td style="font-family:var(--fm);font-size:11px;color:var(--muted);white-space:nowrap">${r.time_range || ''}</td>
+        <td>
+          <div class="tt-subject">${r.subject_name || r.subject_code || '—'}</div>
+          <div class="tt-code">${r.subject_code || ''}</div>
+        </td>
+        <td>${r.section_name || '—'}</td>
+        <td style="font-family:var(--fm);font-size:12px">${r.is_lab ? (r.lab_code || '—') : (r.room_no || '—')}</td>
+      </tr>`;
+    });
+  }
+
+  html += '</tbody></table></div>';
+  body.innerHTML = html;
+}
+
+async function viewFreeSlots() {
+  if (!activeFacultyId) return;
+  const modal = document.getElementById('scheduleModal');
+  const body  = document.getElementById('modalBody');
+  document.getElementById('modalFacultyName').textContent = activeFacultyName + ' — Free Slots Today';
+  modal.classList.add('open');
+  showLoading(body);
+
+  const { ok, data } = await apiFetch(`${CONFIG.API.FACULTY_FREE_SLOTS}/${activeFacultyId}/free-slots`);
+  if (!ok || !data.success) { showError(body, 'Could not load free slots.'); return; }
+
+  const d = data.data;
+
+  let scheduleRows = [];
+  try {
+    const scheduleResponse = await apiFetch(`${CONFIG.API.FACULTY_PUBLIC_SCHEDULE}/${activeFacultyId}/schedule`);
+    if (scheduleResponse.ok && scheduleResponse.data && scheduleResponse.data.success) {
+      scheduleRows = (scheduleResponse.data.data.schedule || []).filter(row => row.day === d.day);
+    }
+  } catch (e) {
+    scheduleRows = [];
+  }
+
+  body.innerHTML = renderFreeSlotsTimeline(d.day, d.free_slots || [], scheduleRows);
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('scheduleModal')) {
+    document.getElementById('scheduleModal').classList.remove('open');
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('scheduleModal').classList.remove('open');
+});
+
+// ── My Timetable ─────────────────────────────────────────
+async function onBranchChange() {
+  const branch = document.getElementById('ttBranch').value;
+  const yearSel = document.getElementById('ttYear');
+  const secSel  = document.getElementById('ttSection');
+  secSel.innerHTML = '<option value="">Select section</option>';
+  document.getElementById('timetableArea').innerHTML = `<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-text">Select your year and section.</div></div>`;
+  
+  // Reset year dropdown
+  yearSel.innerHTML = '<option value="">Select year</option>';
+  yearSel.value = '';
+  
+  if (!branch) return;
+  
+  // Fetch all sections for this branch to extract available years
+  const { ok, data } = await apiFetch(`${CONFIG.API.SECTIONS_LIST}?branch=${branch}`);
+  if (!ok || !data.success || !data.data.length) {
+    return;
+  }
+  
+  // Extract unique years and sort ascending
+  const years = [...new Set(data.data.map(s => s.year))].sort((a, b) => a - b);
+  
+  // Populate year dropdown
+  const yearLabels = { 1: '1st Year', 2: '2nd Year', 3: '3rd Year', 4: '4th Year' };
+  yearSel.innerHTML = '<option value="">Select year</option>' +
+    years.map(y => `<option value="${y}">${yearLabels[y] || y + ' Year'}</option>`).join('');
+}
+
+async function onYearChange() {
+  const branch = document.getElementById('ttBranch').value;
+  const year   = document.getElementById('ttYear').value;
+  const secSel = document.getElementById('ttSection');
+  secSel.innerHTML = '<option value="">Select section</option>';
+  document.getElementById('timetableArea').innerHTML = `<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-text">Select your section.</div></div>`;
+  if (!branch || !year) return;
+  await loadSections(branch, year);
+}
+
+async function loadSections(branch, year) {
+  const secSel = document.getElementById('ttSection');
+  secSel.innerHTML = '<option value="">Loading…</option>';
+
+  const { ok, data } = await apiFetch(`${CONFIG.API.SECTIONS_LIST}?branch=${branch}&year=${year}`);
+  if (!ok || !data.success || !data.data.length) {
+    secSel.innerHTML = '<option value="">No sections found</option>';
+    return;
+  }
+
+  secSel.innerHTML = '<option value="">Select section</option>' +
+    data.data.map(s => `<option value="${s.name}">${s.name}</option>`).join('');
+}
+
+async function loadTimetable() {
+  const branch  = document.getElementById('ttBranch').value;
+  const year    = document.getElementById('ttYear').value;
+  const section = document.getElementById('ttSection').value;
+  const area    = document.getElementById('timetableArea');
+
+  if (!branch || !year || !section) return;
+  showLoading(area);
+
+  const { ok, data } = await apiFetch(`${CONFIG.API.SECTION_TIMETABLE}/${encodeURIComponent(section)}/timetable?branch=${branch}&year=${year}`);
+  if (!ok || !data.success) { showError(area, 'Could not load timetable.'); return; }
+
+  const tt = data.data.timetable;
+  if (!tt.length) {
+    area.innerHTML = '<div class="empty-state"><div class="empty-text">No timetable data for this section yet.</div></div>';
+    return;
+  }
+
+  // Group by day → slot
+  const byDay = {};
+  const DAYS  = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  for (const row of tt) {
+    if (!byDay[row.day]) byDay[row.day] = {};
+    const key = row.slot;
+    if (!byDay[row.day][key]) byDay[row.day][key] = [];
+    byDay[row.day][key].push(row);
+  }
+
+  const SLOTS = ['L1','L2','L3','L4','L5','L6'];
+  let html = '<div class="tt-grid"><table class="tt-table"><thead><tr><th>Day</th>';
+  SLOTS.forEach(s => html += `<th>${s}<div style="font-weight:400;opacity:0.7;letter-spacing:0">${CONFIG.TIME_SLOTS[s]}</div></th>`);
+  html += '</tr></thead><tbody>';
+
+  for (const day of DAYS) {
+    if (!byDay[day]) continue;
+    html += `<tr><td class="tt-day-header">${day}</td>`;
+    for (const slot of SLOTS) {
+      const entries = byDay[day][slot] || [];
+      if (!entries.length) {
+        html += `<td style="color:var(--muted);font-size:12px">—</td>`;
+      } else {
+        html += `<td>` + entries.map(r => `
+          <div style="margin-bottom:${entries.length>1?'8px':'0'}">
+            <div class="tt-subject">${r.subject_name || r.subject_code || '—'}
+              ${r.is_lab ? `<span class="tt-lab">LAB</span>` : ''}
+              ${r.batch && r.batch !== 'ALL' ? `<span class="tt-batch">${r.batch}</span>` : ''}
+            </div>
+            <a class="tt-faculty-link" href="#"
+               onclick="event.preventDefault();selectFacultyFromTT(${r.faculty_id},'${(r.faculty_name||'').replace(/'/g,"\\'")}')">
+              ${r.faculty_name || '—'}
+            </a>
+          </div>`).join('') + `</td>`;
+      }
+    }
+    html += '</tr>';
+  }
+
+  html += '</tbody></table></div>';
+  area.innerHTML = html;
+}
+
+function selectFacultyFromTT(id, name) {
+  showSection({ currentTarget: document.querySelector('.nav-item') }, 'find-faculty');
+  // Switch to find-faculty tab
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-find-faculty').classList.add('active');
+  document.querySelectorAll('.nav-item')[0].classList.add('active');
+
+  activeFacultyId   = id;
+  activeFacultyName = name;
+  document.getElementById('facultySearchInput').value = name;
+  document.getElementById('facultySearchResults').innerHTML = '';
+  selectFaculty(id, name);
+}
+
+// ── Free Rooms ───────────────────────────────────────────
+async function loadFreeRooms() {
+  const day  = document.getElementById('roomDay').value;
+  const slot = document.getElementById('roomSlot').value;
+  const el   = document.getElementById('roomsResult');
+  showLoading(el);
+
+  const { ok, data } = await apiFetch(`${CONFIG.API.ROOMS_FREE}?day=${day}&slot=${slot}`);
+  if (!ok || !data.success) { showError(el, 'Could not load room data.'); return; }
+
+  const d = data.data;
+  const hasFree = d.free_classrooms.length || d.free_labs.length;
+
+  if (!hasFree && !d.busy_classrooms.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🏫</div><div class="empty-text">No room data available. Upload timetables first.</div></div>';
+    return;
+  }
+
+  el.innerHTML = `
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px">
+      Showing availability for <strong style="color:var(--text)">${day}, ${slot}</strong>
+      <span style="font-family:var(--fm);font-size:11px">(${CONFIG.TIME_SLOTS[slot] || ''})</span>
+    </p>
+    <div class="rooms-grid">
+      <div>
+        <div class="rooms-col-title">Free Classrooms (${d.free_classrooms.length})</div>
+        <div class="room-chips">
+          ${d.free_classrooms.length
+            ? d.free_classrooms.map(r => `<div class="room-chip">${r}</div>`).join('')
+            : '<span style="font-size:13px;color:var(--muted)">All classrooms are busy</span>'}
+        </div>
+        ${d.busy_classrooms.length ? `
+          <div style="margin-top:14px">
+            <div class="rooms-col-title">Busy (${d.busy_classrooms.length})</div>
+            <div class="room-chips">${d.busy_classrooms.map(r => `<div class="room-chip busy">${r}</div>`).join('')}</div>
+          </div>` : ''}
+      </div>
+      <div>
+        <div class="rooms-col-title">Free Labs (${d.free_labs.length})</div>
+        <div class="room-chips">
+          ${d.free_labs.length
+            ? d.free_labs.map(r => `<div class="room-chip lab">${r}</div>`).join('')
+            : '<span style="font-size:13px;color:var(--muted)">All labs are busy</span>'}
+        </div>
+        ${d.busy_labs.length ? `
+          <div style="margin-top:14px">
+            <div class="rooms-col-title">Busy (${d.busy_labs.length})</div>
+            <div class="room-chips">${d.busy_labs.map(r => `<div class="room-chip busy">${r}</div>`).join('')}</div>
+          </div>` : ''}
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>

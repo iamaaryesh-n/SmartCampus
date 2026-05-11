@@ -1,0 +1,2375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SmartCampus — Admin Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  /* ── Reset & Variables ─────────────────────────────────── */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease,
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  :root {
+    --bg:        #0b0b11;
+    --surface:   #14141c;
+    --surface2:  #1a1a24;
+    --surface-hover: rgba(255,255,255,0.04);
+    --border:    rgba(255,255,255,0.08);
+    --accent:    #6c63ff;
+    --accent-glow: rgba(108,99,255,0.18);
+    --accent2:   #ff6584;
+    --success:   #00d9a3;
+    --warning:   #ffb347;
+    --text:      #f0f1f7;
+    --muted:     #8a8fa6;
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(108,99,255,0.18), transparent 28%),
+      radial-gradient(circle at top right, rgba(0,217,163,0.08), transparent 22%),
+      linear-gradient(180deg, #08080d 0%, #0d0d14 100%);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Screens ───────────────────────────────────────────── */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; }
+
+  /* ── Login Screen ──────────────────────────────────────── */
+  #loginScreen {
+    align-items: center;
+    justify-content: center;
+    background:
+      radial-gradient(circle at top left, rgba(108,99,255,0.22), transparent 30%),
+      radial-gradient(circle at bottom right, rgba(0,217,163,0.08), transparent 24%),
+      linear-gradient(180deg, #08080d 0%, #0d0d14 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #loginScreen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(124,108,255,0.16), transparent 0 24%),
+      radial-gradient(circle at 80% 30%, rgba(255,101,132,0.08), transparent 0 20%);
+    pointer-events: none;
+  }
+
+  #loginScreen::after {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(108,99,255,0.12), transparent 28%),
+      radial-gradient(circle at 70% 65%, rgba(0,217,163,0.06), transparent 24%),
+      radial-gradient(circle at 50% 50%, rgba(255,255,255,0.03), transparent 42%);
+    animation: meshShift 18s ease-in-out infinite alternate;
+    pointer-events: none;
+    filter: blur(10px);
+  }
+
+  @keyframes meshShift {
+    from { transform: translate3d(-1.5%, -1%, 0) scale(1.02); }
+    to { transform: translate3d(1.5%, 1%, 0) scale(1.06); }
+  }
+
+  .login-box {
+    width: 100%;
+    max-width: 420px;
+    padding: 48px;
+    background: rgba(19,19,26,0.74);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    box-shadow:
+      0 30px 80px rgba(0,0,0,0.55),
+      inset 0 1px 0 rgba(255,255,255,0.04);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    animation: fadeUp 0.5s ease;
+    position: relative;
+    z-index: 1;
+  }
+
+  .login-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .login-brand-mark {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(108,99,255,0.26), rgba(124,108,255,0.08));
+    border: 1px solid rgba(124,108,255,0.25);
+    box-shadow: 0 10px 28px rgba(108,99,255,0.18);
+    flex-shrink: 0;
+  }
+
+  .login-brand-mark svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--accent);
+  }
+
+  .login-brand-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .login-brand-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .login-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    background: rgba(108,99,255,0.12);
+    border: 1px solid rgba(108,99,255,0.3);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+    text-transform: uppercase;
+  }
+
+  .login-title {
+    font-family: var(--font-head);
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    letter-spacing: -1.2px;
+  }
+
+  .login-title span { color: var(--accent); }
+  .login-sub { color: var(--muted); font-size: 14px; margin-bottom: 36px; line-height: 1.6; }
+
+  .login-version {
+    position: absolute;
+    left: 48px;
+    right: 48px;
+    bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  .field { margin-bottom: 20px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-family: var(--font-mono);
+  }
+
+  .field input {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  }
+
+  .field input:focus {
+    border-color: rgba(108,99,255,0.55);
+    background: rgba(255,255,255,0.05);
+    box-shadow: 0 0 0 3px rgba(108,99,255,0.12);
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(
+      135deg,
+      #6c63ff,
+      #7d76ff
+    );
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-family: var(--font-head);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+    margin-top: 8px;
+    box-shadow:
+      0 8px 24px rgba(108,99,255,0.32),
+      0 0 24px rgba(108,99,255,0.12);
+  }
+
+  .btn-primary:hover  {
+    opacity: 0.96;
+    box-shadow:
+      0 12px 28px rgba(108,99,255,0.38),
+      0 0 28px rgba(108,99,255,0.16);
+  }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .error-msg {
+    color: var(--accent2);
+    font-size: 13px;
+    margin-top: 12px;
+    display: none;
+    font-family: var(--font-mono);
+  }
+
+  /* ── Dashboard Layout ──────────────────────────────────── */
+  #dashScreen {
+    flex-direction: row;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 235px;
+    min-height: 100vh;
+    background: rgba(15,15,22,0.92);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 32px 0;
+    flex-shrink: 0;
+    box-shadow: 10px 0 40px rgba(0,0,0,0.35);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sidebar::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.03), transparent 18%),
+      radial-gradient(circle at 20% 0%, rgba(108,99,255,0.08), transparent 28%);
+    pointer-events: none;
+  }
+
+  .sidebar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -1px;
+    width: 1px;
+    height: 100%;
+    background: linear-gradient(
+      to bottom,
+      transparent,
+      rgba(108,99,255,0.35),
+      transparent
+    );
+  }
+
+  .sidebar-logo {
+    font-family: var(--font-head);
+    font-size: 20px;
+    font-weight: 800;
+    padding: 0 24px 28px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .sidebar-logo-mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(108,99,255,0.9), rgba(125,118,255,0.42));
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 22px rgba(108,99,255,0.22);
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo-mark svg {
+    width: 14px;
+    height: 14px;
+    fill: white;
+  }
+
+  .sidebar-logo-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .sidebar-logo span { color: var(--accent); }
+
+  .sidebar-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--muted);
+    display: block;
+    margin-top: 4px;
+    letter-spacing: 1px;
+  }
+
+  .nav-section {
+    padding: 24px 16px 8px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 24px;
+    cursor: pointer;
+    border-radius: 0;
+    font-size: 14px;
+    color: var(--muted);
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+    position: relative;
+    z-index: 1;
+  }
+
+  .nav-item::before {
+    content: '';
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    width: 3px;
+    height: 24px;
+    border-radius: 999px;
+    background: transparent;
+    transform: translateY(-50%) scaleY(0.6);
+    transition: all 0.2s ease;
+  }
+
+  .nav-item:hover {
+    color: var(--text);
+    background: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  }
+
+  .nav-item:hover::before {
+    background: rgba(108,99,255,0.5);
+    transform: translateY(-50%) scaleY(1);
+  }
+  .nav-item.active {
+    color: var(--accent);
+    background: linear-gradient(
+      90deg,
+      rgba(104,92,255,0.28),
+      rgba(104,92,255,0.08)
+    );
+    border-left: 3px solid #7c6cff;
+    box-shadow: 0 0 20px rgba(124,108,255,0.18);
+    transform: translateX(4px);
+  }
+
+  .nav-item.active::before {
+    background: var(--accent);
+    transform: translateY(-50%) scaleY(1);
+  }
+  .nav-item .icon { font-size: 16px; width: 20px; }
+
+  .nav-item .icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .nav-item .icon svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+  }
+
+  .sidebar-bottom {
+    margin-top: auto;
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .admin-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+  }
+
+  .admin-avatar {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, rgba(108,99,255,1), rgba(125,118,255,0.7));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+    box-shadow: 0 8px 18px rgba(108,99,255,0.24);
+  }
+
+  .admin-name { font-size: 13px; font-weight: 500; }
+  .admin-role { font-size: 11px; color: var(--muted); font-family: var(--font-mono); }
+
+  .btn-logout {
+    display: block; width: 100%; margin-top: 8px;
+    padding: 8px; background: transparent;
+    border: 1px solid var(--border); border-radius: 8px;
+    color: var(--muted); font-size: 12px; cursor: pointer;
+    font-family: var(--font-body); transition: all 0.2s;
+  }
+
+  .btn-logout:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* Main Content */
+  .main,
+  .main-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 42px 48px;
+    max-width: 1400px;
+  }
+
+  /* ── Page Header ───────────────────────────────────────── */
+  .page-header {
+    margin-bottom: 32px;
+  }
+
+  .page-title {
+    font-family: var(--font-head);
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -1px;
+  }
+
+  .page-subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 720px;
+    margin-top: 10px;
+    opacity: 0.75;
+  }
+
+  /* ── Stat Cards ────────────────────────────────────────── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-top: 28px;
+    margin-bottom: 40px;
+  }
+
+  .stat-card {
+    background: rgba(19,19,26,0.72);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 20px;
+    transition: all 0.25s ease;
+    cursor: default;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+      0 10px 30px rgba(0,0,0,0.35),
+      inset 0 1px 0 rgba(255,255,255,0.03);
+    position: relative;
+    overflow: hidden;
+    animation: statRise 0.45s ease both;
+    padding-top: 22px;
+  }
+
+  .stat-card:nth-child(1) { animation-delay: 0s; }
+  .stat-card:nth-child(2) { animation-delay: 0.05s; }
+  .stat-card:nth-child(3) { animation-delay: 0.1s; }
+  .stat-card:nth-child(4) { animation-delay: 0.15s; }
+
+  @keyframes statRise {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,0.18),
+      transparent
+    );
+  }
+
+  .stat-visual {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    color: var(--muted);
+    z-index: 1;
+  }
+
+  .stat-visual svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+  }
+
+  .stat-card:nth-child(1) .stat-visual { color: var(--accent); }
+  .stat-card:nth-child(2) .stat-visual { color: var(--success); }
+  .stat-card:nth-child(3) .stat-visual { color: var(--warning); }
+  .stat-card:nth-child(4) .stat-visual { color: var(--muted); }
+
+  .stat-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    border-color: rgba(120,120,255,0.3);
+    box-shadow: 0 12px 30px rgba(90,90,255,0.12);
+  }
+
+  .stat-card:nth-child(1) { border-top: 2px solid rgba(108,99,255,0.8); }
+  .stat-card:nth-child(2) { border-top: 2px solid rgba(0,217,163,0.8); }
+  .stat-card:nth-child(3) { border-top: 2px solid rgba(255,179,71,0.85); }
+  .stat-card:nth-child(4) { border-top: 2px solid rgba(148,163,184,0.75); }
+
+  .stat-card:hover:nth-child(1) { box-shadow: 0 12px 30px rgba(108,99,255,0.12), 0 0 0 1px rgba(108,99,255,0.12) inset; }
+  .stat-card:hover:nth-child(2) { box-shadow: 0 12px 30px rgba(0,217,163,0.12), 0 0 0 1px rgba(0,217,163,0.12) inset; }
+  .stat-card:hover:nth-child(3) { box-shadow: 0 12px 30px rgba(255,179,71,0.12), 0 0 0 1px rgba(255,179,71,0.12) inset; }
+  .stat-card:hover:nth-child(4) { box-shadow: 0 12px 30px rgba(148,163,184,0.12), 0 0 0 1px rgba(148,163,184,0.12) inset; }
+
+  .stat-label {
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin-bottom: 12px;
+  }
+
+  .stat-value {
+    font-family: var(--font-head);
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+
+  .stat-number {
+    letter-spacing: -1px;
+  }
+
+  .stat-value.accent  { color: var(--accent); }
+  .stat-value.success { color: var(--success); }
+  .stat-value.warning { color: var(--warning); }
+  .stat-value.danger  { color: var(--accent2); }
+
+  /* ── Sections Table ────────────────────────────────────── */
+  .card {
+    background: rgba(19,19,26,0.72);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow:
+      0 10px 30px rgba(0,0,0,0.35),
+      inset 0 1px 0 rgba(255,255,255,0.03);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255,255,255,0.18),
+      transparent
+    );
+  }
+
+  .card-title {
+    font-family: var(--font-head);
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: -0.4px;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    background: rgba(108,99,255,0.15);
+    color: var(--accent);
+  }
+
+  .badge.warning { background: rgba(255,179,71,0.15); color: var(--warning); }
+  .badge.success { background: rgba(0,217,163,0.15); color: var(--success); }
+  .badge.danger  { background: rgba(255,101,132,0.15); color: var(--accent2); }
+
+  table {
+    width: 100%;
+    border-spacing: 0 8px;
+    border-collapse: separate;
+    font-size: 14px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  thead tr {
+    background: rgba(255,255,255,0.03);
+  }
+
+  th {
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 16px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 16px 12px;
+    border-bottom: 1px solid rgba(42,42,61,0.5);
+    color: var(--text);
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tbody tr {
+    background: rgba(255,255,255,0.015);
+    transition: all 0.2s ease;
+  }
+
+  tbody tr:nth-child(even) {
+    background: rgba(255,255,255,0.022);
+  }
+
+  tbody tr:nth-child(odd) {
+    background: rgba(255,255,255,0.014);
+  }
+
+  tbody tr:hover {
+    background: rgba(255,255,255,0.04);
+    transform: scale(1.003);
+  }
+
+  tr:hover td { background: transparent; }
+
+  /* ── Upload Page ───────────────────────────────────────── */
+  .upload-steps {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  .step-card {
+    background: rgba(19,19,26,0.72);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    box-shadow:
+      0 10px 30px rgba(0,0,0,0.28),
+      inset 0 1px 0 rgba(255,255,255,0.03);
+  }
+
+  .step-number {
+    font-family: var(--font-mono);
+    font-size: 64px;
+    color: rgba(255,255,255,0.045);
+    letter-spacing: -5px;
+    position: absolute;
+    right: 18px;
+    top: -8px;
+    font-weight: 700;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .step-title {
+    font-family: var(--font-head);
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .select-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .select-btn {
+    padding: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-family: var(--font-body);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+
+  .select-btn:hover  { border-color: var(--accent); color: var(--text); }
+  .select-btn.chosen { border-color: var(--accent); color: var(--accent); background: rgba(108,99,255,0.1); }
+
+  .year-group {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Drop Zone */
+  .dropzone {
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .dropzone::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 2px dashed transparent;
+    pointer-events: none;
+  }
+
+  .dropzone:hover::before,
+  .dropzone.drag-over::before {
+    animation: borderPulse 1.2s linear infinite;
+    border-image: linear-gradient(90deg, transparent, rgba(108,99,255,0.75), transparent) 1;
+  }
+
+  .dropzone:hover,
+  .dropzone.drag-over { border-color: var(--accent); background: rgba(108,99,255,0.05); }
+
+  @keyframes borderPulse {
+    0% { filter: brightness(1); }
+    50% { filter: brightness(1.2); }
+    100% { filter: brightness(1); }
+  }
+
+  .dropzone input[type="file"] {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    opacity: 0; cursor: pointer;
+  }
+
+  .drop-icon { font-size: 40px; margin-bottom: 12px; }
+  .drop-title { font-family: var(--font-head); font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .drop-sub   { font-size: 13px; color: var(--muted); }
+
+  .files-list {
+    margin-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .file-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 10px;
+    font-size: 13px;
+    font-family: var(--font-mono);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .file-chip::before {
+    content: 'PDF';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 20px;
+    border-radius: 6px;
+    background: rgba(108,99,255,0.16);
+    color: var(--accent);
+    font-size: 9px;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+  }
+
+  .file-chip .remove {
+    margin-left: auto;
+    cursor: pointer;
+    color: var(--accent2);
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  /* Progress */
+  .progress-wrap {
+    display: none;
+    margin-top: 16px;
+  }
+
+  .progress-bar-bg {
+    height: 4px;
+    background: var(--surface2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    width: 0%;
+    transition: width 0.3s;
+    animation: progressPulse 1.4s ease-in-out infinite;
+  }
+
+  @keyframes progressPulse {
+    0%, 100% { opacity: 0.75; }
+    50% { opacity: 1; }
+  }
+
+  .progress-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin-top: 6px;
+  }
+
+  /* Result */
+  .upload-result {
+    display: none;
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 10px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+  }
+
+  .upload-result.success { background: rgba(0,217,163,0.1); color: var(--success); border: 1px solid rgba(0,217,163,0.3); }
+  .upload-result.error   { background: rgba(255,101,132,0.1); color: var(--accent2); border: 1px solid rgba(255,101,132,0.3); }
+
+  /* ── Faculty Management ────────────────────────────────── */
+  .search-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .search-bar input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    outline: none;
+  }
+
+  .search-bar input:focus { border-color: var(--accent); }
+
+  .btn-sm {
+    padding: 8px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: all 0.2s;
+  }
+
+  .btn-sm::before { content: ''; }
+
+  .btn-sm .btn-icon {
+    margin-right: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+  }
+
+  .btn-sm.primary::before { content: ''; }
+
+  .btn-sm[onclick*="resolveConflict"]:first-of-type,
+  .btn-sm.primary {
+    background: rgba(0,217,163,0.12);
+    border-color: rgba(0,217,163,0.35);
+    color: var(--success);
+  }
+
+  .btn-sm[onclick*="resolveConflict"]:last-of-type {
+    background: transparent;
+    border-color: rgba(255,101,132,0.35);
+    color: var(--accent2);
+  }
+
+  .btn-sm[onclick*="createAccount"] {
+    background: rgba(108,99,255,0.12);
+    border-color: rgba(108,99,255,0.28);
+    color: var(--accent);
+  }
+
+  .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-sm.primary {
+    background: rgba(108,99,255,0.14);
+    color: var(--accent);
+    border-color: rgba(108,99,255,0.3);
+  }
+  .btn-sm.primary:hover { opacity: 0.92; }
+
+  .login-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.4px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    background: var(--warning);
+    box-shadow: 0 0 0 4px rgba(255,179,71,0.12);
+  }
+
+  .login-state.active .status-dot {
+    background: var(--success);
+    box-shadow: 0 0 0 4px rgba(0,217,163,0.12);
+  }
+
+  .conflict-comparison {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-top: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(255,179,71,0.06);
+    border: 1px solid rgba(255,179,71,0.12);
+  }
+
+  .conflict-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .conflict-entry strong {
+    font-family: var(--font-head);
+    font-size: 14px;
+    color: var(--text);
+  }
+
+  .conflict-entry span,
+  .conflict-entry small {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .conflict-vs {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--warning);
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(5,5,10,0.68);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: rgba(19,19,26,0.82);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 32px;
+    width: 420px;
+    animation: modalIn 0.28s ease;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.5);
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-title {
+    font-family: var(--font-head);
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: flex-end;
+  }
+
+  /* ── Conflict Cards ────────────────────────────────────── */
+  .conflict-card {
+    background: rgba(19,19,26,0.72);
+    border: 1px solid rgba(255,179,71,0.22);
+    border-left: 4px solid rgba(255,179,71,0.85);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 10px 24px rgba(255,179,71,0.08);
+  }
+
+  .conflict-icon { font-size: 24px; }
+
+  .conflict-info { flex: 1; }
+  .conflict-name { font-family: var(--font-head); font-size: 15px; font-weight: 700; }
+  .conflict-detail { font-size: 13px; color: var(--muted); font-family: var(--font-mono); margin-top: 4px; }
+
+  .conflict-actions { display: flex; gap: 8px; }
+
+  .btn-sm[onclick*="resolveConflict"][onclick*="merged"] {
+    background: rgba(0,217,163,0.12);
+    border-color: rgba(0,217,163,0.4);
+    color: var(--success);
+  }
+
+  .btn-sm[onclick*="resolveConflict"][onclick*="separated"] {
+    background: transparent;
+    border-color: rgba(255,101,132,0.45);
+    color: var(--accent2);
+  }
+
+  /* ── Utility ───────────────────────────────────────────── */
+  .hidden { display: none !important; }
+  .page-section { display: none; }
+  .page-section.active {
+    display: block;
+    animation: fadeIn 0.35s ease;
+  }
+
+  .page {
+    animation: fadeIn 0.35s ease;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px;
+    color: var(--muted);
+  }
+
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-text { font-size: 14px; }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    background: var(--surface2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Responsive tweaks */
+  @media (max-width: 900px) {
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .upload-steps { grid-template-columns: 1fr; }
+  }
+
+  /* Light SaaS theme override, aligned with student.html */
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --surface2: #f1f0eb;
+    --surface-hover: #fbfaf7;
+    --border: #e8e5de;
+    --accent: #5b54e8;
+    --accent-glow: rgba(91,84,232,0.12);
+    --accent2: #991b1b;
+    --success: #1a6b4a;
+    --warning: #92570a;
+    --text: #1a1917;
+    --muted: #7a7873;
+    --font-head: 'Plus Jakarta Sans', sans-serif;
+    --font-body: 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle, #c9c6bd 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .screen { position: relative; z-index: 1; }
+
+  #loginScreen {
+    background: var(--bg);
+    padding: 24px;
+  }
+
+  #loginScreen::before {
+    background-image: radial-gradient(circle, #c9c6bd 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: 0.5;
+  }
+
+  #loginScreen::after,
+  .sidebar::before,
+  .sidebar::after,
+  .card::before,
+  .stat-card::before,
+  .dropzone::before,
+  .file-chip::before {
+    display: none;
+  }
+
+  .login-box,
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 24px 64px rgba(26,25,23,0.12);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .login-brand-mark,
+  .sidebar-logo-mark,
+  .admin-avatar {
+    background: var(--text);
+    border: 1px solid var(--text);
+    border-radius: 9px;
+    box-shadow: none;
+    color: #fff;
+  }
+
+  .login-brand-mark svg,
+  .sidebar-logo-mark svg {
+    fill: #fff;
+  }
+
+  .login-brand-label,
+  .sidebar-badge,
+  .step-number,
+  .stat-label,
+  th,
+  .progress-label,
+  .admin-role {
+    color: var(--muted);
+    letter-spacing: 1.5px;
+  }
+
+  .login-badge,
+  .badge {
+    color: var(--accent);
+    background: #eeedfb;
+    border: 1px solid #d4d1f7;
+  }
+
+  .badge.warning {
+    color: var(--warning);
+    background: #fef3e2;
+    border-color: #f5cc80;
+  }
+
+  .badge.success {
+    color: var(--success);
+    background: #e8f5ef;
+    border-color: #a8d9c0;
+  }
+
+  .badge.danger {
+    color: var(--accent2);
+    background: #fef2f2;
+    border-color: #fca5a5;
+  }
+
+  .login-title,
+  .page-title,
+  .stat-value,
+  .card-title,
+  .step-title,
+  .drop-title,
+  .conflict-name,
+  .modal-title,
+  .sidebar-logo {
+    font-family: var(--font-head);
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .login-sub,
+  .page-subtitle,
+  .drop-sub,
+  .empty-state,
+  .empty-text {
+    color: var(--muted);
+  }
+
+  .field input,
+  .search-bar input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 9px;
+    box-shadow: none;
+  }
+
+  .field input:focus,
+  .search-bar input:focus {
+    background: var(--surface);
+    border-color: #d4d1f7;
+    box-shadow: 0 0 0 3px rgba(91,84,232,0.10);
+  }
+
+  .btn-primary,
+  .btn-sm.primary,
+  .btn-sm[onclick*="createAccount"],
+  .btn-sm[onclick*="resolveConflict"][onclick*="merged"] {
+    background: var(--accent);
+    border: 1px solid var(--accent);
+    color: #fff;
+    border-radius: 9px;
+    box-shadow: none;
+    font-family: var(--font-body);
+    font-weight: 700;
+  }
+
+  .btn-primary:hover,
+  .btn-sm.primary:hover {
+    background: #4d46d9;
+    border-color: #4d46d9;
+    opacity: 1;
+    box-shadow: none;
+  }
+
+  .btn-sm,
+  .btn-logout,
+  .select-btn,
+  .btn-sm[onclick*="resolveConflict"]:last-of-type,
+  .btn-sm[onclick*="resolveConflict"][onclick*="separated"] {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 9px;
+    box-shadow: none;
+    font-family: var(--font-body);
+    font-weight: 600;
+  }
+
+  .btn-sm:hover,
+  .btn-logout:hover,
+  .select-btn:hover {
+    background: var(--bg);
+    border-color: #ccc9c0;
+    color: var(--text);
+  }
+
+  #dashScreen {
+    background: transparent;
+  }
+
+  .sidebar {
+    background: rgba(255,255,255,0.72);
+    border-right: 1px solid var(--border);
+    box-shadow: none;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .sidebar-logo,
+  .sidebar-bottom {
+    border-color: var(--border);
+  }
+
+  .sidebar-logo span,
+  .login-title span,
+  .stat-value.accent {
+    color: var(--accent);
+  }
+
+  .nav-section {
+    color: var(--muted);
+  }
+
+  .nav-item {
+    margin: 0 12px 4px;
+    padding: 10px 12px;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    color: var(--muted);
+    border-left: 1px solid transparent;
+  }
+
+  .nav-item:hover {
+    color: var(--text);
+    background: var(--surface);
+    border-color: var(--border);
+  }
+
+  .nav-item.active {
+    color: var(--accent);
+    background: var(--surface);
+    border: 1px solid #d4d1f7;
+    box-shadow: none;
+    transform: none;
+    font-weight: 700;
+  }
+
+  .nav-item::before {
+    display: none;
+  }
+
+  .admin-chip,
+  .stat-card,
+  .card,
+  .step-card,
+  .conflict-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: 0 8px 24px rgba(26,25,23,0.04);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .stat-card {
+    border-top: 1px solid var(--border) !important;
+    padding: 22px 20px;
+  }
+
+  .stat-card:hover,
+  .stat-card:hover:nth-child(n) {
+    transform: translateY(-2px);
+    border-color: #d4d1f7;
+    box-shadow: 0 12px 30px rgba(26,25,23,0.07);
+  }
+
+  .stat-visual {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    box-shadow: none;
+  }
+
+  .stat-value.success { color: var(--success); }
+  .stat-value.warning { color: var(--warning); }
+  .stat-value.danger { color: var(--accent2); }
+
+  .card-title {
+    border-color: var(--border);
+  }
+
+  table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    overflow: hidden;
+  }
+
+  thead tr {
+    background: var(--bg);
+  }
+
+  th {
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    border-bottom: 1px solid rgba(232,229,222,0.75);
+    color: var(--text);
+  }
+
+  tbody tr,
+  tbody tr:nth-child(even),
+  tbody tr:nth-child(odd) {
+    background: var(--surface);
+  }
+
+  tbody tr:hover {
+    background: rgba(232,229,222,0.25);
+    transform: none;
+  }
+
+  .tag {
+    background: var(--bg);
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+
+  .select-btn.chosen {
+    border-color: #d4d1f7;
+    color: var(--accent);
+    background: #eeedfb;
+  }
+
+  .dropzone {
+    background: var(--bg);
+    border: 1.5px dashed #d8d4cb;
+    border-radius: 14px;
+    color: var(--text);
+  }
+
+  .dropzone:hover,
+  .dropzone.drag-over {
+    border-color: #d4d1f7;
+    background: #fbfaf7;
+  }
+
+  .file-chip {
+    background: #eeedfb;
+    color: var(--accent);
+    border: 1px solid #d4d1f7;
+    border-radius: 9px;
+    box-shadow: none;
+  }
+
+  .file-chip .remove {
+    color: var(--accent2);
+  }
+
+  .progress-bar-bg {
+    background: var(--bg);
+    border: 1px solid var(--border);
+  }
+
+  .progress-bar {
+    background: var(--accent);
+    box-shadow: none;
+  }
+
+  .upload-result.success {
+    color: var(--success);
+    background: #e8f5ef;
+    border: 1px solid #a8d9c0;
+  }
+
+  .upload-result.error,
+  .error-msg {
+    color: var(--accent2);
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 9px;
+    padding: 10px 12px;
+  }
+
+  #loginError,
+  #modalError {
+    background: transparent;
+    border: 0;
+    padding: 0;
+  }
+
+  .login-state {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .login-state.active {
+    background: #e8f5ef;
+    border-color: #a8d9c0;
+    color: var(--success);
+  }
+
+  .status-dot {
+    background: #c9c6bd;
+    box-shadow: none;
+  }
+
+  .login-state.active .status-dot {
+    background: var(--success);
+    box-shadow: 0 0 0 3px rgba(26,107,74,0.15);
+  }
+
+  .conflict-comparison {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+
+  .conflict-entry {
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .conflict-entry strong,
+  .conflict-entry span,
+  .conflict-entry small,
+  .conflict-detail {
+    color: var(--muted);
+  }
+
+  .conflict-vs {
+    color: var(--muted);
+  }
+
+  .modal-overlay {
+    background: rgba(26,25,23,0.42);
+    backdrop-filter: blur(4px);
+  }
+
+  .empty-state {
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+  }
+
+  .spinner {
+    border-color: var(--border);
+    border-top-color: var(--accent);
+  }
+
+  *,
+  *::before,
+  *::after {
+    letter-spacing: 0 !important;
+  }
+
+  .step-number {
+    position: static;
+    font-size: 10px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 900px) {
+    #dashScreen { flex-direction: column; }
+    .sidebar {
+      width: 100%;
+      min-height: auto;
+      padding: 18px 0;
+      position: relative;
+    }
+    .main,
+    .main-content { padding: 24px 16px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .upload-steps { grid-template-columns: 1fr; }
+    .conflict-card,
+    .conflict-actions { flex-direction: column; align-items: stretch; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════
+     LOGIN SCREEN
+════════════════════════════════════════════════════════ -->
+<div id="loginScreen" class="screen active">
+  <div class="login-box">
+    <div class="login-brand">
+      <div class="login-brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+          <path d="M12 2 3.5 6.5 12 11l8.5-4.5L12 2Zm0 10.5L3.5 8V18L12 22.5 20.5 18V8l-8.5 4.5Z"/>
+        </svg>
+      </div>
+      <div class="login-brand-copy">
+        <div class="login-brand-label">Admin Portal</div>
+        <div class="login-badge">⬡ SmartCampus</div>
+      </div>
+    </div>
+    <h1 class="login-title">Smart<span>Campus</span></h1>
+    <p class="login-sub">Sign in to manage timetables, faculty & conflicts.</p>
+
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="admin" autocomplete="username" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button class="btn-primary" onclick="doLogin()">Sign In</button>
+    <div class="error-msg" id="loginError">Invalid username or password.</div>
+    <div class="login-version">v1.0 — SmartCampus <span>Admin UI</span></div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     DASHBOARD SCREEN
+════════════════════════════════════════════════════════ -->
+<div id="dashScreen" class="screen">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+          <path d="M12 2 3 6.8 12 11.5 21 6.8 12 2Zm0 10.4L3 7.8V18l9 4 9-4V7.8l-9 4.6Z"/>
+        </svg>
+      </div>
+      <div class="sidebar-logo-text">
+        <div>Smart<span>Campus</span></div>
+        <span class="sidebar-badge">// ADMIN PANEL</span>
+      </div>
+    </div>
+
+    <div class="nav-section">Navigation</div>
+    <div class="nav-item active" onclick="showPage(event, 'overview')">
+      <span class="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M4 4h6v6H4V4Zm10 0h6v6h-6V4ZM4 14h6v6H4v-6Zm10 0h6v6h-6v-6Z"/></svg>
+      </span> Overview
+    </div>
+    <div class="nav-item" onclick="showPage(event, 'upload')">
+      <span class="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 3l4.5 4.5-1.4 1.4L13 7.8V16h-2V7.8L8.9 8.9 7.5 7.5 12 3Zm-7 14h14v2H5v-2Z"/></svg>
+      </span> Upload Timetable
+    </div>
+    <div class="nav-item" onclick="showPage(event, 'conflicts')">
+      <span class="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M1.8 20.5 12 3l10.2 17.5H1.8ZM12 8.2l-.7 7.1h1.4L12 8.2Zm0 9.5a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Z"/></svg>
+      </span> Conflicts
+      <span class="badge warning" id="conflictCount" style="margin-left:auto">0</span>
+    </div>
+    <div class="nav-item" onclick="showPage(event, 'faculty')">
+      <span class="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 12.2a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.1 0-8 2-8 5v1h16v-1c0-3-3.9-5-8-5Z"/></svg>
+      </span> Faculty
+    </div>
+
+    <div class="sidebar-bottom">
+      <div class="admin-chip">
+        <div class="admin-avatar" id="adminAvatar">A</div>
+        <div>
+          <div class="admin-name" id="adminName">Admin</div>
+          <div class="admin-role">administrator</div>
+        </div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main main-content">
+
+    <!-- ── Overview Page ─────────────────────────────────── -->
+    <div id="page-overview" class="page-section page active">
+      <div class="page-header">
+        <h1 class="page-title">Overview</h1>
+        <p class="page-subtitle">System status and uploaded timetable data.</p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-visual" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 4h18v3H3V4Zm0 6h8v3H3v-3Zm0 6h18v3H3v-3ZM13 10h8v3h-8v-3Z"/></svg>
+          </div>
+          <div class="stat-label">Sections</div>
+          <div class="stat-value stat-number accent" id="statSections">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-visual" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 12.2a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.1 0-8 2-8 5v1h16v-1c0-3-3.9-5-8-5Z"/></svg>
+          </div>
+          <div class="stat-label">Faculty</div>
+          <div class="stat-value stat-number success" id="statFaculty">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-visual" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M1.8 20.5 12 3l10.2 17.5H1.8ZM12 8.2l-.7 7.1h1.4L12 8.2Zm0 9.5a1.1 1.1 0 1 0 0 2.2 1.1 1.1 0 0 0 0-2.2Z"/></svg>
+          </div>
+          <div class="stat-label">Conflicts</div>
+          <div class="stat-value stat-number warning" id="statConflicts">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-visual" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M5 3h9l5 5v13H5V3Zm8 1.5V9h4.5L13 4.5ZM8 13h8v2H8v-2Zm0 4h8v2H8v-2Z"/></svg>
+          </div>
+          <div class="stat-label">PDFs Uploaded</div>
+          <div class="stat-value stat-number" id="statPdfs">—</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Uploaded Sections <span class="badge" id="sectionBadge">0</span></div>
+        <table>
+          <thead>
+            <tr class="table-row">
+              <th>Section</th>
+              <th>Branch</th>
+              <th>Year</th>
+              <th>Room</th>
+              <th>Semester</th>
+              <th>Uploaded</th>
+            </tr>
+          </thead>
+          <tbody id="sectionsTable">
+            <tr class="table-row"><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Upload Page ────────────────────────────────────── -->
+    <div id="page-upload" class="page-section page">
+      <div class="page-header">
+        <h1 class="page-title">Upload Timetable</h1>
+        <p class="page-subtitle">Select branch and year, then upload one or more PDF files.</p>
+      </div>
+
+      <div class="upload-steps">
+        <!-- Step 1: Branch -->
+        <div class="step-card">
+          <div class="step-number">STEP 01</div>
+          <div class="step-title">Select Branch</div>
+          <div class="select-group">
+            <button class="select-btn" onclick="selectBranch('BTech', this)">B.Tech</button>
+            <button class="select-btn" onclick="selectBranch('BCA', this)">BCA</button>
+            <button class="select-btn" onclick="selectBranch('MCA', this)">MCA</button>
+            <button class="select-btn" onclick="selectBranch('MBA', this)">MBA</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Year -->
+        <div class="step-card">
+          <div class="step-number">STEP 02</div>
+          <div class="step-title">Select Year</div>
+          <div class="year-group">
+            <button class="select-btn" onclick="selectYear(1, this)">1st</button>
+            <button class="select-btn" onclick="selectYear(2, this)">2nd</button>
+            <button class="select-btn" onclick="selectYear(3, this)">3rd</button>
+            <button class="select-btn" onclick="selectYear(4, this)">4th</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Upload -->
+      <div class="step-card">
+        <div class="step-number">STEP 03</div>
+        <div class="step-title">Upload PDF Files</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">
+          You can upload multiple PDFs at once (one per section).
+          Each PDF's section is auto-detected — only that section's data is replaced.
+        </p>
+
+        <div class="dropzone" id="dropzone"
+             ondragover="handleDragOver(event)"
+             ondragleave="handleDragLeave(event)"
+             ondrop="handleDrop(event)">
+          <input type="file" id="fileInput" multiple accept=".pdf"
+                 onchange="handleFiles(this.files)" />
+          <div class="drop-icon">📄</div>
+          <div class="drop-title">Drop PDFs here or click to browse</div>
+          <div class="drop-sub">Supports multiple files — PDF only</div>
+        </div>
+
+        <div class="files-list" id="filesList"></div>
+
+        <div class="progress-wrap" id="progressWrap">
+          <div class="progress-bar-bg">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+          <div class="progress-label" id="progressLabel">Uploading...</div>
+        </div>
+
+        <div class="upload-result" id="uploadResult"></div>
+
+        <button class="btn-primary" style="margin-top:20px;max-width:200px"
+                onclick="doUpload()">
+          Upload & Parse
+        </button>
+      </div>
+    </div>
+
+    <!-- ── Conflicts Page ─────────────────────────────────── -->
+    <div id="page-conflicts" class="page-section page">
+      <div class="page-header">
+        <h1 class="page-title">Conflict Resolution</h1>
+        <p class="page-subtitle">
+          These conflicts were detected while parsing PDFs.
+          Resolve each one so the system knows whether two entries are the same person or different.
+        </p>
+      </div>
+      <div id="conflictsList">
+        <div class="empty-state">
+          <div class="empty-icon">✅</div>
+          <div class="empty-text">No pending conflicts — all good!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Faculty Page ───────────────────────────────────── -->
+    <div id="page-faculty" class="page-section page">
+      <div class="page-header">
+        <h1 class="page-title">Faculty Management</h1>
+        <p class="page-subtitle">View all faculty and create login accounts so they can mark attendance.</p>
+      </div>
+
+      <div class="search-bar">
+        <input type="text" id="facultySearch" placeholder="Search by name..."
+               oninput="filterFaculty()" />
+      </div>
+
+      <div class="card">
+        <table>
+          <thead>
+            <tr class="table-row">
+              <th>Name</th>
+              <th>Department</th>
+              <th>Email</th>
+              <th>Login</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="facultyTable">
+            <tr class="table-row"><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">Loading...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── Create Account Modal ─────────────────────────────── -->
+<div class="modal-overlay" id="accountModal">
+  <div class="modal">
+    <div class="modal-title">Create Login Account</div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px">
+      Set email and password so this faculty can log into the Faculty Portal.
+    </p>
+    <input type="hidden" id="modalFacultyId" />
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="modalEmail" placeholder="faculty@college.edu" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="modalPassword" placeholder="Set a password" />
+    </div>
+    <div id="modalError" class="error-msg"></div>
+    <div class="modal-actions">
+      <button class="btn-sm" onclick="closeModal()">Cancel</button>
+      <button class="btn-sm primary" onclick="createAccount()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Scripts ──────────────────────────────────────────── -->
+<script src="config.js"></script>
+<script>
+// ── State ────────────────────────────────────────────────
+let selectedBranch = null;
+let selectedYear   = null;
+let selectedFiles  = [];
+let allFaculty     = [];
+
+// ── Login ────────────────────────────────────────────────
+async function doLogin() {
+  const username = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value.trim();
+  const errEl    = document.getElementById('loginError');
+  errEl.style.display = 'none';
+
+  const { ok, data } = await apiFetch(CONFIG.API.ADMIN_LOGIN, {
+    method: 'POST',
+    body: { username, password }
+  });
+
+  if (!ok) {
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // Store admin name
+  document.getElementById('adminName').textContent    = username;
+  document.getElementById('adminAvatar').textContent  = username[0].toUpperCase();
+
+  // Switch screens
+  document.getElementById('loginScreen').classList.remove('active');
+  document.getElementById('dashScreen').classList.add('active');
+
+  loadOverview();
+  loadConflicts();
+  loadFaculty();
+}
+
+// Enter key on login
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('loginScreen').classList.contains('active')) {
+    doLogin();
+  }
+});
+
+// ── Logout ───────────────────────────────────────────────
+async function doLogout() {
+  await apiFetch(CONFIG.API.ADMIN_LOGOUT, { method: 'POST' });
+  document.getElementById('dashScreen').classList.remove('active');
+  document.getElementById('loginScreen').classList.add('active');
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+// ── Navigation ───────────────────────────────────────────
+function showPage(event, name) {
+  document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ── Overview ─────────────────────────────────────────────
+async function loadOverview() {
+  // Load sections
+  const { data: secData } = await apiFetch(CONFIG.API.ADMIN_SECTIONS);
+  if (secData.success) {
+    const sections = secData.data;
+    document.getElementById('statSections').textContent = sections.length;
+    document.getElementById('sectionBadge').textContent = sections.length;
+
+    const tbody = document.getElementById('sectionsTable');
+    if (!sections.length) {
+      tbody.innerHTML = `<tr class="table-row"><td colspan="6" style="text-align:center;color:var(--muted);padding:32px">
+        No sections uploaded yet. Go to Upload Timetable to get started.</td></tr>`;
+    } else {
+      tbody.innerHTML = sections.map(s => `
+        <tr class="table-row">
+          <td><strong>${s.name}</strong></td>
+          <td><span class="tag">${s.branch}</span></td>
+          <td>Year ${s.year}</td>
+          <td><span class="tag">${s.room_no || '—'}</span></td>
+          <td>${s.semester || '—'}</td>
+          <td style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">
+            ${s.uploaded_at ? s.uploaded_at.split(' ')[0] : '—'}
+          </td>
+        </tr>`).join('');
+    }
+  }
+
+  // Load faculty count
+  const { data: facData } = await apiFetch(CONFIG.API.ADMIN_FACULTY_LIST);
+  if (facData.success) {
+    document.getElementById('statFaculty').textContent = facData.data.length;
+  }
+
+  // Load uploads count
+  const { data: upData } = await apiFetch(CONFIG.API.ADMIN_UPLOADS_LIST);
+  if (upData.success) {
+    document.getElementById('statPdfs').textContent = upData.data.length;
+  }
+}
+
+// ── Conflicts ────────────────────────────────────────────
+async function loadConflicts() {
+  const { data } = await apiFetch(CONFIG.API.ADMIN_CONFLICTS);
+  if (!data.success) return;
+
+  const conflicts = data.data;
+  document.getElementById('statConflicts').textContent = conflicts.length;
+  document.getElementById('conflictCount').textContent = conflicts.length;
+
+  const el = document.getElementById('conflictsList');
+
+  if (!conflicts.length) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">✅</div>
+        <div class="empty-text">No pending conflicts — all good!</div>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = conflicts.map(c => `
+    <div class="conflict-card" id="conflict-${c.id}">
+      <div class="conflict-icon">⚠️</div>
+      <div class="conflict-info">
+        <div class="conflict-name">${c.faculty_name}</div>
+        <div class="conflict-comparison">
+          <div class="conflict-entry">
+            <strong>${c.abbr_1}</strong>
+            <span>${c.section_1}</span>
+            <small>${c.branch_1}</small>
+          </div>
+          <div class="conflict-vs">vs</div>
+          <div class="conflict-entry">
+            <strong>${c.abbr_2}</strong>
+            <span>${c.section_2}</span>
+            <small>${c.branch_2}</small>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">
+          Type: ${c.conflict_type}
+        </div>
+      </div>
+      <div class="conflict-actions">
+        <button class="btn-sm primary" onclick="resolveConflict(${c.id}, 'merged')">
+          <span class="btn-icon">✓</span> Same Person
+        </button>
+        <button class="btn-sm" onclick="resolveConflict(${c.id}, 'separated')">
+          <span class="btn-icon">✕</span> Different
+        </button>
+      </div>
+    </div>`).join('');
+}
+
+async function resolveConflict(id, action) {
+  const { ok } = await apiFetch(
+    `${CONFIG.API.ADMIN_RESOLVE_CONFLICT}/${id}/resolve`,
+    { method: 'POST', body: { action } }
+  );
+  if (ok) {
+    document.getElementById(`conflict-${id}`)?.remove();
+    // Update counter
+    const remaining = document.querySelectorAll('.conflict-card').length;
+    document.getElementById('conflictCount').textContent = remaining;
+    document.getElementById('statConflicts').textContent = remaining;
+    if (!remaining) loadConflicts(); // shows empty state
+  }
+}
+
+// ── Upload ───────────────────────────────────────────────
+function selectBranch(val, el) {
+  selectedBranch = val;
+  document.querySelectorAll('.select-group .select-btn').forEach(b => b.classList.remove('chosen'));
+  el.classList.add('chosen');
+}
+
+function selectYear(val, el) {
+  selectedYear = val;
+  document.querySelectorAll('.year-group .select-btn').forEach(b => b.classList.remove('chosen'));
+  el.classList.add('chosen');
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('dropzone').classList.add('drag-over');
+}
+
+function handleDragLeave() {
+  document.getElementById('dropzone').classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropzone').classList.remove('drag-over');
+  const files = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.pdf'));
+  addFiles(files);
+}
+
+function handleFiles(fileList) {
+  addFiles(Array.from(fileList));
+}
+
+function addFiles(newFiles) {
+  newFiles.forEach(f => {
+    if (!selectedFiles.find(x => x.name === f.name)) {
+      selectedFiles.push(f);
+    }
+  });
+  renderFilesList();
+}
+
+function removeFile(name) {
+  selectedFiles = selectedFiles.filter(f => f.name !== name);
+  renderFilesList();
+}
+
+function renderFilesList() {
+  const el = document.getElementById('filesList');
+  el.innerHTML = selectedFiles.map(f => `
+    <div class="file-chip">
+      📄 ${f.name}
+      <span class="remove" onclick="removeFile('${f.name}')">✕</span>
+    </div>`).join('');
+}
+
+async function doUpload() {
+  // Validate
+  if (!selectedBranch) { alert('Please select a branch first.'); return; }
+  if (!selectedYear)   { alert('Please select a year first.'); return; }
+  if (!selectedFiles.length) { alert('Please select at least one PDF.'); return; }
+
+  // Build form data — NO hardcoded URLs
+  const formData = new FormData();
+  formData.append('branch', selectedBranch);
+  formData.append('year', selectedYear);
+  selectedFiles.forEach(f => formData.append('pdfs', f));
+
+  // Show progress
+  const pw  = document.getElementById('progressWrap');
+  const pb  = document.getElementById('progressBar');
+  const pl  = document.getElementById('progressLabel');
+  const res = document.getElementById('uploadResult');
+  pw.style.display = 'block';
+  res.style.display = 'none';
+  pb.style.width = '20%';
+  pl.textContent = `Uploading ${selectedFiles.length} PDF(s)...`;
+
+  try {
+    const response = await fetch(apiUrl(CONFIG.API.ADMIN_UPLOAD), {
+      method: 'POST',
+      credentials: 'include',
+      body: formData
+      // Note: DO NOT set Content-Type here — browser sets it with boundary for FormData
+    });
+
+    pb.style.width = '80%';
+    pl.textContent = 'Parsing timetable data...';
+
+    const data = await response.json();
+    pb.style.width = '100%';
+
+    if (data.success) {
+      const saved = data.data.saved_sections;
+      pl.textContent = 'Done!';
+      res.className = 'upload-result success';
+      res.style.display = 'block';
+      res.textContent = `✅ Successfully saved: ${saved.join(', ')}`;
+      selectedFiles = [];
+      renderFilesList();
+      // Refresh overview data
+      setTimeout(() => { loadOverview(); loadConflicts(); }, 500);
+    } else {
+      pl.textContent = 'Failed.';
+      res.className = 'upload-result error';
+      res.style.display = 'block';
+      res.textContent = `❌ ${data.error || 'Upload failed'}`;
+    }
+  } catch (err) {
+    pl.textContent = 'Error.';
+    res.className = 'upload-result error';
+    res.style.display = 'block';
+    res.textContent = `❌ Network error: ${err.message}`;
+  }
+
+  setTimeout(() => { pw.style.display = 'none'; pb.style.width = '0%'; }, 2000);
+}
+
+// ── Faculty ──────────────────────────────────────────────
+async function loadFaculty() {
+  const { data } = await apiFetch(CONFIG.API.ADMIN_FACULTY_LIST);
+  if (!data.success) return;
+  allFaculty = data.data;
+  renderFaculty(allFaculty);
+}
+
+function renderFaculty(list) {
+  const tbody = document.getElementById('facultyTable');
+  if (!list.length) {
+    tbody.innerHTML = `<tr class="table-row"><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">
+      No faculty found. Upload timetable PDFs first.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map(f => `
+    <tr class="table-row">
+      <td><strong>${f.full_name}</strong></td>
+      <td><span class="tag">${f.department || '—'}</span></td>
+      <td style="font-family:var(--font-mono);font-size:12px">${f.email || '—'}</td>
+      <td>
+        ${f.email
+          ? `<span class="login-state active"><span class="status-dot"></span>Active</span>`
+          : `<span class="login-state"><span class="status-dot"></span>No login</span>`}
+      </td>
+      <td>
+        <button class="btn-sm" onclick="openAccountModal(${f.id}, '${f.full_name}')">
+          <span class="btn-icon">✚</span>${f.email ? 'Update' : 'Create Login'}
+        </button>
+      </td>
+    </tr>`).join('');
+}
+
+function filterFaculty() {
+  const q = document.getElementById('facultySearch').value.toLowerCase();
+  renderFaculty(allFaculty.filter(f => f.full_name.toLowerCase().includes(q)));
+}
+
+// ── Account Modal ────────────────────────────────────────
+function openAccountModal(id, name) {
+  document.getElementById('modalFacultyId').value = id;
+  document.getElementById('modalEmail').value     = '';
+  document.getElementById('modalPassword').value  = '';
+  document.getElementById('modalError').style.display = 'none';
+  document.querySelector('#accountModal .modal-title').textContent =
+    `Login for ${name}`;
+  document.getElementById('accountModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('accountModal').classList.remove('open');
+}
+
+async function createAccount() {
+  const id    = document.getElementById('modalFacultyId').value;
+  const email = document.getElementById('modalEmail').value.trim();
+  const pw    = document.getElementById('modalPassword').value.trim();
+  const errEl = document.getElementById('modalError');
+  errEl.style.display = 'none';
+
+  if (!email || !pw) {
+    errEl.textContent = 'Email and password are required.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const { ok, data } = await apiFetch(
+    `${CONFIG.API.ADMIN_CREATE_ACCOUNT}/${id}/create-account`,
+    { method: 'POST', body: { email, password: pw } }
+  );
+
+  if (!ok) {
+    errEl.textContent = data.error || 'Failed to create account.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  closeModal();
+  loadFaculty(); // refresh table
+}
+
+// Close modal on overlay click
+document.getElementById('accountModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+</script>
+</body>
+</html>
