@@ -58,8 +58,10 @@ SLOT_ROW_PAIRS = [
 # ── Name normalisation ─────────────────────────────────────────────────────────
 
 def normalize_name(raw: str) -> str:
-    """Lowercase, strip honorifics, collapse whitespace."""
+    """Lowercase, strip honorifics, collapse whitespace, remove stray punctuation."""
     name = re.sub(r'^(Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s*', '', raw.strip(), flags=re.IGNORECASE)
+    # Remove stray dots not part of initials pattern — e.g. "K." → "K"
+    name = re.sub(r'\b([A-Za-z])\.', r'\1', name)
     return re.sub(r'\s+', ' ', name).strip().lower()
 
 
@@ -92,15 +94,18 @@ def _token_based_duplicate_match(name_a: str, name_b: str) -> bool:
 
 def split_faculty_names(raw: str) -> list[str]:
     """
-    Split only explicit combined faculty values joined with " / ".
-    Keeps all other name formats unchanged.
+    Split combined faculty values joined with "/" or " / ".
+    Handles formats like:
+      "Dr. A / Dr. B"           →  ["Dr. A", "Dr. B"]
+      "Dr. A/Dr. B/Dr. C"       →  ["Dr. A", "Dr. B", "Dr. C"]
+      "Mr. Neeraj Arya"         →  ["Mr. Neeraj Arya"]
     """
     clean = (raw or '').strip()
     if not clean:
         return []
-    if ' / ' not in clean:
-        return [clean]
-    return [name.strip() for name in clean.split(' / ') if name.strip()]
+    # Split on "/" with any surrounding whitespace
+    parts = [name.strip() for name in re.split(r'\s*/\s*', clean) if name.strip()]
+    return parts if parts else [clean]
 
 
 def faculty_similarity(name_a: str, name_b: str) -> float:
@@ -611,6 +616,15 @@ def _group_lines(lines: list) -> list:
             return True
 
         # Plain BTCS601N  — lecture, all batches
+        # BTCS607N-B1  or  BTCS607N-B1+B2
+        m = re.match(r'^(BT\w+)\s*[-\u2013]\s*(B[1-3](?:\+B[1-3])*)$', line)
+        if m:
+            current['subject_code'] = m.group(1)
+            current['batch']        = m.group(2)
+            current['is_lab']       = False
+            current['lab_code']     = ''
+            return True
+
         m = re.match(r'^(BT\w+)$', line)
         if m:
             current['subject_code'] = m.group(1)
@@ -703,43 +717,48 @@ def _lookup_faculty(abbr: str, faculty_map: dict):
 # ── Database persistence ───────────────────────────────────────────────────────
 
 def get_or_create_faculty(conn, full_name: str, abbr: str, branch: str, year: int) -> int:
-    """Find/create faculty rows; map abbreviation to a stable primary faculty."""
+    """Find/create faculty row for the PRIMARY faculty only; map abbreviation to them.
+
+    When a timetable cell has a single abbreviation mapped to multiple names
+    (e.g. "Dr. Shilpa Phadnis / Dr. K. Subramanyam / Dr. Anurag Joshi" all
+    under abbreviation CS-SP), the abbreviation and all timetable rows belong
+    to the first (primary) name only.  Secondary names must NOT get their own
+    faculty rows here — they would end up with no timetable entries and appear
+    as unscheduled faculty.
+
+    Secondary names that genuinely teach classes will be encountered again via
+    their own abbreviation entry on another page and will be created then.
+    """
     c = conn.cursor()
 
-    # For entries like "Dr. A / Dr. B", create separate faculty rows.
+    # Use only the FIRST name from a slash-separated list
     names = split_faculty_names(full_name)
-    if not names:
-        names = [full_name]
+    primary_name = names[0] if names else full_name
 
-    primary_fid = None
-    for idx, single_name in enumerate(names):
-        norm = normalize_name(single_name)
-        c.execute('SELECT id FROM faculties WHERE normalized_name=?', (norm,))
-        row = c.fetchone()
-        if row:
-            fid = row[0]
-        else:
-            duplicate_candidate = find_best_duplicate_candidate(conn, single_name)
-            c.execute(
-                'INSERT INTO faculties (full_name, normalized_name) VALUES (?, ?)',
-                (single_name, norm)
+    norm = normalize_name(primary_name)
+    c.execute('SELECT id FROM faculties WHERE normalized_name=?', (norm,))
+    row = c.fetchone()
+    if row:
+        primary_fid = row[0]
+    else:
+        duplicate_candidate = find_best_duplicate_candidate(conn, primary_name)
+        c.execute(
+            'INSERT INTO faculties (full_name, normalized_name) VALUES (?, ?)',
+            (primary_name, norm)
+        )
+        primary_fid = c.lastrowid
+
+        if duplicate_candidate:
+            record_duplicate_review(
+                conn,
+                duplicate_candidate['id'],
+                primary_fid,
+                duplicate_candidate['full_name'],
+                primary_name,
+                duplicate_candidate['score'],
+                branch,
+                year,
             )
-            fid = c.lastrowid
-
-            if duplicate_candidate:
-                record_duplicate_review(
-                    conn,
-                    duplicate_candidate['id'],
-                    fid,
-                    duplicate_candidate['full_name'],
-                    single_name,
-                    duplicate_candidate['score'],
-                    branch,
-                    year,
-                )
-
-        if idx == 0:
-            primary_fid = fid
 
     c.execute('''
         INSERT OR IGNORE INTO faculty_abbreviations
@@ -772,12 +791,45 @@ def save_to_db(section_data_list: list, branch: str, year: int, pdf_filename: st
                 c.execute('DELETE FROM sections   WHERE id=?',         (existing[0],))
                 print(f"    🔄 Replaced existing {sname}")
 
+            # Register all faculty first (needed to resolve class_teacher_id below)
+            abbr_to_id = {}
+            for abbr, info in sd['faculty_map'].items():
+                fid = get_or_create_faculty(conn, info['name'], abbr, branch, year)
+                abbr_to_id[abbr] = fid
+
+            # Resolve class teacher name → faculty id
+            class_teacher_id = None
+            ct_raw = sd.get('class_teacher', '').strip()
+            if ct_raw:
+                ct_norm = normalize_name(ct_raw)
+                r = c.execute(
+                    'SELECT id FROM faculties WHERE normalized_name=?', (ct_norm,)
+                ).fetchone()
+                if r:
+                    class_teacher_id = r[0]
+                else:
+                    # Fuzzy match among already-inserted faculty
+                    best = find_best_duplicate_candidate(conn, ct_raw)
+                    if best and best['score'] >= 0.88:
+                        class_teacher_id = best['id']
+                    else:
+                        # Class teacher not in course table — insert as faculty record
+                        c.execute(
+                            'INSERT OR IGNORE INTO faculties (full_name, normalized_name) VALUES (?, ?)',
+                            (ct_raw, ct_norm)
+                        )
+                        r2 = c.execute(
+                            'SELECT id FROM faculties WHERE normalized_name=?', (ct_norm,)
+                        ).fetchone()
+                        if r2:
+                            class_teacher_id = r2[0]
+
             # Insert section
             c.execute('''
                 INSERT INTO sections
                     (name, branch, year, semester, program, room_no,
                      class_teacher_id, effective_from)
-                VALUES (?, ?, ?, ?, ?, ?, NULL, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 sname,
                 branch,
@@ -785,15 +837,10 @@ def save_to_db(section_data_list: list, branch: str, year: int, pdf_filename: st
                 sd.get('semester', ''),
                 sd.get('program', ''),
                 sd.get('room_no', ''),
+                class_teacher_id,
                 sd.get('effective_from', ''),
             ))
             section_id = c.lastrowid
-
-            # Register all faculty
-            abbr_to_id = {}
-            for abbr, info in sd['faculty_map'].items():
-                fid = get_or_create_faculty(conn, info['name'], abbr, branch, year)
-                abbr_to_id[abbr] = fid
 
             # Insert timetable rows
             inserted = 0

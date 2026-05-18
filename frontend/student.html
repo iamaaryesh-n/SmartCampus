@@ -193,7 +193,9 @@ nav {
   flex: 1;
   padding: 32px 40px;
   overflow-y: auto;
-  max-width: 960px;
+  max-width: 1220px;
+  min-width: 0;
+  width: 100%;
 }
 
 /* ── Sections ── */
@@ -317,6 +319,13 @@ nav {
 
 .faculty-chip-left { display: flex; align-items: center; gap: 12px; }
 
+.faculty-chip-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
 .faculty-avatar {
   width: 36px; height: 36px;
   border-radius: 10px;
@@ -332,6 +341,40 @@ nav {
 .faculty-name { font-size: 14px; font-weight: 600; color: var(--text); }
 .faculty-dept { font-size: 12px; color: var(--muted); margin-top: 1px; }
 
+.faculty-attendance-badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.faculty-attendance-badge.green {
+  color: var(--student);
+  background: var(--studentbg);
+  border-color: var(--studentbdr);
+}
+
+.faculty-attendance-badge.red {
+  color: var(--danger);
+  background: var(--dangerbg);
+  border-color: var(--dangerbdr);
+}
+
+.faculty-attendance-badge.gray,
+.faculty-attendance-badge.loading {
+  color: var(--muted);
+  background: var(--bg);
+  border-color: var(--border);
+}
+
 .faculty-chip-action {
   font-family: var(--fm);
   font-size: 11px;
@@ -340,6 +383,13 @@ nav {
   border: 1px solid var(--studentbdr);
   padding: 3px 10px;
   border-radius: 20px;
+}
+
+.faculty-chip-action.is-disabled {
+  color: var(--muted);
+  background: var(--bg);
+  border-color: var(--border);
+  opacity: 0.9;
 }
 
 /* ── Where Now result ── */
@@ -439,7 +489,7 @@ select {
 select:focus { border-color: var(--studentbdr); background: var(--surface); }
 
 .tt-grid {
-  overflow-x: auto;
+  overflow-x: hidden;
   border-radius: 12px;
   border: 1px solid var(--border);
 }
@@ -447,16 +497,22 @@ select:focus { border-color: var(--studentbdr); background: var(--surface); }
 .tt-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12.5px;
-  min-width: 600px;
+  table-layout: fixed;
+  font-size: 12px;
+  min-width: 0;
+}
+
+.tt-table th:first-child,
+.tt-table td:first-child {
+  width: 11%;
 }
 
 .tt-table th {
   background: var(--bg);
-  padding: 10px 12px;
+  padding: 8px 10px;
   text-align: left;
   font-family: var(--fm);
-  font-size: 10px;
+  font-size: 9.5px;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--muted);
@@ -464,14 +520,37 @@ select:focus { border-color: var(--studentbdr); background: var(--surface); }
   white-space: nowrap;
 }
 
+.tt-slot-head {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.tt-slot-head strong {
+  font-family: var(--fm);
+  font-size: 10.5px;
+  color: var(--text);
+}
+
+.tt-slot-time {
+  font-family: var(--fh);
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
 .tt-table td {
-  padding: 11px 12px;
+  padding: 8px 10px;
   border-bottom: 1px solid rgba(232,229,222,0.6);
   vertical-align: top;
   color: var(--text);
 }
 
 .tt-table tr:last-child td { border-bottom: none; }
+
+.tt-table tbody tr:nth-child(even) td { background: rgba(247,246,242,0.45); }
 
 .tt-table tbody tr:hover td { background: rgba(232,229,222,0.25); }
 
@@ -493,10 +572,168 @@ select:focus { border-color: var(--studentbdr); background: var(--surface); }
 }
 
 .tt-subject { font-weight: 600; color: var(--text); margin-bottom: 2px; }
-.tt-code    { font-family: var(--fm); font-size: 11px; color: var(--muted); }
+.tt-code    { font-family: var(--fm); font-size: 10px; color: var(--muted); }
+
+.tt-cell-stack {
+  display: grid;
+  gap: 6px;
+  max-height: 210px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 2px;
+  min-width: 0;
+}
+
+.tt-entry-card {
+  background: rgba(255,255,255,0.82);
+  border: 1px solid rgba(232,229,222,0.95);
+  border-radius: 8px;
+  padding: 8px 9px;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  min-width: 0;
+}
+
+.tt-entry-card:hover {
+  border-color: var(--studentbdr);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  transform: translateY(-1px);
+}
+
+.tt-entry-card.lab {
+  background: rgba(254,243,226,0.72);
+  border-color: var(--warningbdr);
+}
+
+.tt-entry-card.faculty-absent {
+  background: rgba(254,242,242,0.72);
+  border-color: var(--dangerbdr);
+}
+
+.tt-entry-main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tt-entry-card .tt-subject {
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 700;
+  margin-bottom: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.tt-faculty-line {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  margin-top: 5px;
+  min-width: 0;
+  width: 100%;
+}
+
+.tt-faculty-name-wrap {
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+.tt-chip-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.tt-entry-card .tt-faculty-link {
+  display: block;
+  width: 100%;
+  font-size: 11px;
+  color: var(--faculty);
+  font-weight: 500;
+  line-height: 1.35;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: auto;
+  min-width: 0;
+}
+
+.tt-entry-card .tt-faculty-link:hover {
+  color: var(--faculty);
+}
+
+.tt-entry-card.faculty-absent .tt-faculty-link {
+  color: var(--muted);
+  opacity: 0.72;
+}
+
+.tt-entry-card.faculty-absent .tt-subject,
+.tt-entry-card.faculty-absent .tt-faculty-link {
+  opacity: 0.82;
+}
+
+.tt-attendance-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-family: var(--fm);
+  font-size: 9px;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
+
+.tt-attendance-badge.green {
+  color: var(--student);
+  background: var(--studentbg);
+  border-color: var(--studentbdr);
+}
+
+.tt-attendance-badge.red {
+  color: var(--danger);
+  background: var(--dangerbg);
+  border-color: var(--dangerbdr);
+}
+
+.tt-attendance-badge.gray,
+.tt-attendance-badge.loading {
+  color: var(--muted);
+  background: var(--bg);
+  border-color: var(--border);
+}
+
+.tt-attendance-badge .tt-att-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.9;
+  flex-shrink: 0;
+}
+
+.tt-attendance-badge.loading .tt-att-dot {
+  opacity: 0.55;
+}
+
+.tt-entry-card .tt-batch,
+.tt-entry-card .tt-lab {
+  margin-left: 0;
+}
 
 .tt-faculty-link {
-  font-size: 12px;
+  font-size: 11.5px;
   color: var(--faculty);
   text-decoration: none;
   font-weight: 500;
@@ -509,8 +746,8 @@ select:focus { border-color: var(--studentbdr); background: var(--surface); }
 
 .tt-batch {
   font-family: var(--fm);
-  font-size: 10px;
-  padding: 2px 6px;
+  font-size: 9px;
+  padding: 2px 5px;
   border-radius: 4px;
   background: var(--indigobg);
   color: var(--indigo);
@@ -521,14 +758,18 @@ select:focus { border-color: var(--studentbdr); background: var(--surface); }
 
 .tt-lab {
   font-family: var(--fm);
-  font-size: 10px;
-  padding: 2px 6px;
+  font-size: 9px;
+  padding: 2px 5px;
   border-radius: 4px;
   background: var(--warningbg);
   color: var(--warning);
   border: 1px solid var(--warningbdr);
   display: inline-block;
   margin-left: 4px;
+}
+
+#sec-my-timetable .card {
+  padding: 20px 22px;
 }
 
 /* ── Free rooms ── */
@@ -1156,11 +1397,13 @@ select:focus { border-color: var(--studentbdr); background: var(--surface); }
 </div>
 
 <script src="config.js"></script>
+<script src="attendance-store.js"></script>
 <script>
 // ── State ────────────────────────────────────────────────
 let activeFacultyId   = null;
 let activeFacultyName = '';
 let searchTimeout     = null;
+let latestFacultySearchResults = [];
 
 // Set today's day in free rooms selector
 (function() {
@@ -1214,6 +1457,107 @@ function escapeHtml(value) {
     '"': '&quot;',
     "'": '&#39;'
   }[ch]));
+}
+
+function renderAttendanceBadge(facultyId) {
+  if (!window.AttendanceStore) return '';
+
+  const att = AttendanceStore.getFacultyAttendanceStatus(facultyId);
+  if (!AttendanceStore.isLoaded() && !att) {
+    return '<span class="faculty-attendance-badge loading">Loading attendance…</span>';
+  }
+
+  const status = att ? att.status : 'unmarked';
+  const variant = AttendanceStore.getStatusBadgeVariant(status);
+  const label = AttendanceStore.getReadableAttendanceLabel(status);
+  return `<span class="faculty-attendance-badge ${variant}">${escapeHtml(label)}</span>`;
+}
+
+function createTimetableAttendanceResolver() {
+  const memo = new Map();
+
+  return function resolve(facultyId) {
+    if (facultyId === undefined || facultyId === null) return null;
+
+    const key = String(facultyId);
+    if (memo.has(key)) return memo.get(key);
+
+    const record = window.AttendanceStore ? AttendanceStore.getFacultyAttendanceStatus(facultyId) : null;
+    memo.set(key, record || null);
+    return record || null;
+  };
+}
+
+function renderTimetableAttendanceBadge(record) {
+  if (!window.AttendanceStore) return '';
+
+  if (!AttendanceStore.isLoaded() && !record) {
+    return '<span class="tt-attendance-badge loading"><span class="tt-att-dot"></span>Loading</span>';
+  }
+
+  const status = record ? record.status : 'unmarked';
+  const variant = AttendanceStore.getStatusBadgeVariant(status);
+  const label = AttendanceStore.getReadableAttendanceLabel(status);
+  return `<span class="tt-attendance-badge ${variant}"><span class="tt-att-dot"></span>${escapeHtml(label)}</span>`;
+}
+
+function getFacultySearchAttendance(facultyId) {
+  if (!window.AttendanceStore) return null;
+  return AttendanceStore.getFacultyAttendanceStatus(facultyId);
+}
+
+function facultySearchActionLabel(facultyId) {
+  const att = getFacultySearchAttendance(facultyId);
+  return att && att.status === 'absent' ? 'Faculty unavailable today' : 'Where now? →';
+}
+
+function handleFacultySearchSelection(id, name) {
+  const att = getFacultySearchAttendance(id);
+  if (att && att.status === 'absent') {
+    activeFacultyId   = id;
+    activeFacultyName = name;
+
+    const card = document.getElementById('whereNowCard');
+    const res  = document.getElementById('whereNowResult');
+    card.style.display = 'block';
+    res.innerHTML = `
+      <div class="where-now-result absent">
+        <div class="wnr-header">
+          <div class="wnr-dot"></div>
+          <div class="wnr-status">${escapeHtml(name)} is absent today</div>
+        </div>
+        <div class="wnr-detail">Faculty unavailable today.</div>
+      </div>`;
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
+
+  selectFaculty(id, name);
+}
+
+function renderFacultyResults(list) {
+  const el = document.getElementById('facultySearchResults');
+  latestFacultySearchResults = Array.isArray(list) ? list : [];
+
+  if (!latestFacultySearchResults.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">No faculty found. Try a different name.</div></div>';
+    return;
+  }
+
+  el.innerHTML = '<div class="faculty-results">' + latestFacultySearchResults.map(f => `
+    <div class="faculty-chip" onclick="handleFacultySearchSelection(${f.id}, '${f.full_name.replace(/'/g,"\\'")}')">
+      <div class="faculty-chip-left">
+        <div class="faculty-avatar">${initials(f.full_name)}</div>
+        <div class="faculty-chip-details">
+          <div>
+            <div class="faculty-name">${f.full_name}</div>
+            <div class="faculty-dept">${f.department || 'Faculty'}</div>
+          </div>
+          ${renderAttendanceBadge(f.id)}
+        </div>
+      </div>
+      <div class="faculty-chip-action ${getFacultySearchAttendance(f.id)?.status === 'absent' ? 'is-disabled' : ''}">${escapeHtml(facultySearchActionLabel(f.id))}</div>
+    </div>`).join('') + '</div>';
 }
 
 function getCurrentSlot() {
@@ -1356,21 +1700,12 @@ async function searchFaculty() {
 
   const list = data.data;
   if (!list.length) {
+    latestFacultySearchResults = [];
     el.innerHTML = '<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">No faculty found. Try a different name.</div></div>';
     return;
   }
 
-  el.innerHTML = '<div class="faculty-results">' + list.map(f => `
-    <div class="faculty-chip" onclick="selectFaculty(${f.id}, '${f.full_name.replace(/'/g,"\\'")}')">
-      <div class="faculty-chip-left">
-        <div class="faculty-avatar">${initials(f.full_name)}</div>
-        <div>
-          <div class="faculty-name">${f.full_name}</div>
-          <div class="faculty-dept">${f.department || 'Faculty'}</div>
-        </div>
-      </div>
-      <div class="faculty-chip-action">Where now? →</div>
-    </div>`).join('') + '</div>';
+  renderFacultyResults(list);
 }
 
 async function selectFaculty(id, name) {
@@ -1444,6 +1779,21 @@ async function selectFaculty(id, name) {
       </div>`;
   }
 }
+
+if (window.AttendanceStore) {
+  AttendanceStore.fetchTodayAttendance().then(() => {
+    AttendanceStore.startAutoRefresh(4 * 60 * 1000);
+    if (latestFacultySearchResults.length) {
+      renderFacultyResults(latestFacultySearchResults);
+    }
+  });
+}
+
+window.addEventListener('beforeunload', () => {
+  if (window.AttendanceStore) {
+    AttendanceStore.stopAutoRefresh();
+  }
+});
 
 // ── Full Schedule Modal ──────────────────────────────────
 async function viewFacultySchedule() {
@@ -1612,8 +1962,18 @@ async function loadTimetable() {
   }
 
   const SLOTS = ['L1','L2','L3','L4','L5','L6'];
+  const attendanceMemo = new Map();
+  const resolveAttendance = (facultyId) => {
+    if (facultyId === undefined || facultyId === null) return null;
+    const key = String(facultyId);
+    if (attendanceMemo.has(key)) return attendanceMemo.get(key);
+    const record = window.AttendanceStore ? AttendanceStore.getFacultyAttendanceStatus(facultyId) : null;
+    attendanceMemo.set(key, record || null);
+    return record || null;
+  };
+
   let html = '<div class="tt-grid"><table class="tt-table"><thead><tr><th>Day</th>';
-  SLOTS.forEach(s => html += `<th>${s}<div style="font-weight:400;opacity:0.7;letter-spacing:0">${CONFIG.TIME_SLOTS[s]}</div></th>`);
+  SLOTS.forEach(s => html += `<th><div class="tt-slot-head"><strong>${s}</strong><span class="tt-slot-time">${CONFIG.TIME_SLOTS[s]}</span></div></th>`);
   html += '</tr></thead><tbody>';
 
   for (const day of DAYS) {
@@ -1624,17 +1984,35 @@ async function loadTimetable() {
       if (!entries.length) {
         html += `<td style="color:var(--muted);font-size:12px">—</td>`;
       } else {
-        html += `<td>` + entries.map(r => `
-          <div style="margin-bottom:${entries.length>1?'8px':'0'}">
-            <div class="tt-subject">${r.subject_name || r.subject_code || '—'}
-              ${r.is_lab ? `<span class="tt-lab">LAB</span>` : ''}
-              ${r.batch && r.batch !== 'ALL' ? `<span class="tt-batch">${r.batch}</span>` : ''}
+        html += `<td><div class="tt-cell-stack">` + entries.map(r => `
+          ${(() => {
+            const att = resolveAttendance(r.faculty_id);
+            const attStatus = att ? att.status : 'unmarked';
+            const absentClass = attStatus === 'absent' ? 'faculty-absent' : '';
+            const badge = (window.AttendanceStore && AttendanceStore.isLoaded() && !att)
+              ? '<span class="tt-attendance-badge gray"><span class="tt-att-dot"></span>Not Marked</span>'
+              : `<span class="tt-attendance-badge ${window.AttendanceStore ? AttendanceStore.getStatusBadgeVariant(attStatus) : 'gray'}"><span class="tt-att-dot"></span>${escapeHtml(window.AttendanceStore ? AttendanceStore.getReadableAttendanceLabel(attStatus) : 'Not Marked')}</span>`;
+
+            return `<div class="tt-entry-card ${r.is_lab ? 'lab' : ''} ${absentClass}">
+            <div class="tt-entry-main">
+              <div class="tt-subject">${r.subject_name || r.subject_code || '—'}</div>
+              <div class="tt-chip-row">
+                ${r.is_lab ? `<span class="tt-lab">LAB</span>` : ''}
+                ${r.batch && r.batch !== 'ALL' ? `<span class="tt-batch">${r.batch}</span>` : ''}
+              </div>
             </div>
-            <a class="tt-faculty-link" href="#"
-               onclick="event.preventDefault();selectFacultyFromTT(${r.faculty_id},'${(r.faculty_name||'').replace(/'/g,"\\'")}')">
-              ${r.faculty_name || '—'}
-            </a>
-          </div>`).join('') + `</td>`;
+            <div class="tt-faculty-line">
+              <div class="tt-faculty-name-wrap">
+                <a class="tt-faculty-link" href="#"
+                   onclick="event.preventDefault();selectFacultyFromTT(${r.faculty_id},'${(r.faculty_name||'').replace(/'/g,"\\'")}')">
+                  ${escapeHtml(r.faculty_name || '—')}
+                </a>
+              </div>
+              ${badge}
+            </div>
+          </div>`;
+          })()}`
+        ).join('') + `</div></td>`;
       }
     }
     html += '</tr>';

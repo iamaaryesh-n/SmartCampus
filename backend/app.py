@@ -272,6 +272,65 @@ def admin_sections():
     return ok(rows_to_list(rows))
 
 
+@app.route('/api/admin/reset-timetable', methods=['POST'])
+def admin_reset_timetable():
+    guard = require_admin()
+    if guard: return guard
+
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute('DELETE FROM timetable')
+    c.execute('DELETE FROM sections')
+    c.execute('DELETE FROM pdf_uploads')
+    c.execute('DELETE FROM conflicts')
+    c.execute('DELETE FROM faculty_abbreviations')
+    c.execute('DELETE FROM faculty_duplicate_reviews')
+    conn.commit()
+    conn.close()
+    return ok({'message': 'Timetable data cleared. Faculty and attendance preserved.'})
+
+
+@app.route('/api/admin/faculty/unused', methods=['GET'])
+def admin_unused_faculty():
+    """
+    Faculty who exist in DB but are not referenced anywhere in the current
+    timetable — neither as a teaching faculty nor as a class teacher.
+    """
+    guard = require_admin()
+    if guard: return guard
+
+    conn = get_connection()
+    rows = conn.execute('''
+        SELECT f.id, f.full_name, f.email, f.department, f.is_active,
+               CASE WHEN f.email IS NOT NULL AND f.password_hash IS NOT NULL
+                    THEN 1 ELSE 0 END as has_login
+        FROM faculties f
+        WHERE f.id NOT IN (SELECT DISTINCT faculty_id FROM timetable)
+          AND f.id NOT IN (
+              SELECT DISTINCT class_teacher_id FROM sections
+              WHERE class_teacher_id IS NOT NULL
+          )
+        ORDER BY f.full_name
+    ''').fetchall()
+    conn.close()
+    return ok(rows_to_list(rows))
+
+
+@app.route('/api/admin/faculty/<int:fid>/disable-login', methods=['POST'])
+def disable_faculty_login(fid):
+    guard = require_admin()
+    if guard: return guard
+
+    conn = get_connection()
+    conn.execute(
+        'UPDATE faculties SET email=NULL, password_hash=NULL, is_active=0 WHERE id=?',
+        (fid,)
+    )
+    conn.commit()
+    conn.close()
+    return ok({'message': 'Faculty login disabled'})
+
+
 def _merge_faculty_records(conn, keep_faculty_id: int, merge_faculty_id: int):
     """Move timetable and related references from one faculty row into another."""
     if keep_faculty_id == merge_faculty_id:
@@ -382,13 +441,13 @@ def faculty_login():
 
     conn = get_connection()
     row  = conn.execute(
-        'SELECT * FROM faculties WHERE email=? AND password_hash=?',
+        'SELECT * FROM faculties WHERE email=? AND password_hash=? AND is_active=1',
         (email, hash_password(pw))
     ).fetchone()
     conn.close()
 
     if not row:
-        return error('Invalid email or password', 401)
+        return error('Invalid credentials or account disabled', 401)
 
     session['faculty_id']   = row['id']
     session['faculty_name'] = row['full_name']
@@ -485,15 +544,39 @@ def mark_attendance():
     today = today_str()
 
     conn = get_connection()
-    # Upsert: replace if already marked
+
+    # Check if already marked so we can return previous status in response
+    existing = conn.execute(
+        'SELECT status FROM attendance_log WHERE faculty_id=? AND date=?',
+        (fid, today)
+    ).fetchone()
+
+    prev_status = existing['status'] if existing else None
+
+    # UPSERT — faculty can correct accidental marks or update for half-day etc.
     conn.execute('''
         INSERT INTO attendance_log (faculty_id, date, status, marked_by)
         VALUES (?, ?, ?, 'self')
-        ON CONFLICT(faculty_id, date) DO UPDATE SET status=excluded.status, marked_at=datetime('now')
+        ON CONFLICT(faculty_id, date)
+        DO UPDATE SET status=excluded.status,
+                      marked_at=datetime('now'),
+                      marked_by='self'
     ''', (fid, today, status))
     conn.commit()
+
+    # Fetch the server-generated marked_at so frontend shows accurate time
+    updated = conn.execute(
+        'SELECT marked_at FROM attendance_log WHERE faculty_id=? AND date=?',
+        (fid, today)
+    ).fetchone()
     conn.close()
-    return ok({'date': today, 'status': status})
+
+    return ok({
+        'date':        today,
+        'status':      status,
+        'prev_status': prev_status,
+        'marked_at':   updated['marked_at'] if updated else None
+    })
 
 
 @app.route('/api/faculty/attendance/status', methods=['GET'])

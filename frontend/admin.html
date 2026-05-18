@@ -942,6 +942,33 @@
   .upload-result.success { background: rgba(0,217,163,0.1); color: var(--success); border: 1px solid rgba(0,217,163,0.3); }
   .upload-result.error   { background: rgba(255,101,132,0.1); color: var(--accent2); border: 1px solid rgba(255,101,132,0.3); }
 
+  .danger-zone {
+    border-color: rgba(255,101,132,0.48);
+    background: rgba(255,101,132,0.06);
+  }
+
+  .danger-zone .card-title {
+    color: var(--accent2);
+  }
+
+  .danger-zone p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 18px;
+  }
+
+  .btn-danger {
+    background: rgba(255,101,132,0.14);
+    border: 1px solid rgba(255,101,132,0.45);
+    color: var(--accent2);
+  }
+
+  .btn-danger:hover {
+    border-color: var(--accent2);
+    color: var(--accent2);
+  }
+
   /* ── Faculty Management ────────────────────────────────── */
   .search-bar {
     display: flex;
@@ -1004,6 +1031,12 @@
     background: rgba(108,99,255,0.12);
     border-color: rgba(108,99,255,0.28);
     color: var(--accent);
+  }
+
+  .btn-sm.danger-outline {
+    background: transparent;
+    border-color: rgba(255,101,132,0.45);
+    color: var(--accent2);
   }
 
   .btn-sm:hover { border-color: var(--accent); color: var(--accent); }
@@ -1194,6 +1227,72 @@
     background: var(--surface2);
     color: var(--muted);
     border: 1px solid var(--border);
+  }
+
+  .unused-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 18px;
+  }
+
+  .unused-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .unused-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 18px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+  }
+
+  .unused-name {
+    font-family: var(--font-head);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .unused-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  #toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 3000;
+    max-width: 360px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: rgba(0,217,163,0.14);
+    border: 1px solid rgba(0,217,163,0.35);
+    color: var(--success);
+    font-size: 13px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.32);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: opacity 0.2s, transform 0.2s;
+  }
+
+  #toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  #toast.error {
+    background: rgba(255,101,132,0.14);
+    border-color: rgba(255,101,132,0.35);
+    color: var(--accent2);
   }
 
   .spinner {
@@ -1776,6 +1875,11 @@
         <svg viewBox="0 0 24 24"><path d="M12 12.2a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4.1 0-8 2-8 5v1h16v-1c0-3-3.9-5-8-5Z"/></svg>
       </span> Faculty
     </div>
+    <div class="nav-item" onclick="showPage(event, 'unused-faculty')">
+      <span class="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M16 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm-8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm8 2c-2.6 0-5 1.3-5 3.2V18h10v-1.8c0-1.9-2.4-3.2-5-3.2Zm-8 0c-2.6 0-5 1.3-5 3.2V18h6v-1.8c0-1 .5-1.9 1.4-2.6A6.4 6.4 0 0 0 8 13Z"/></svg>
+      </span> Unscheduled Faculty
+    </div>
 
     <div class="sidebar-bottom">
       <div class="admin-chip">
@@ -1919,6 +2023,12 @@
           Upload & Parse
         </button>
       </div>
+
+      <div class="card danger-zone">
+        <div class="card-title">Reset Timetable Data</div>
+        <p>Clears all timetable, sections, uploads and conflicts. Faculty accounts and attendance history are preserved.</p>
+        <button class="btn-sm btn-danger" onclick="resetTimetable()">Reset Timetable</button>
+      </div>
     </div>
 
     <!-- ── Conflicts Page ─────────────────────────────────── -->
@@ -1968,10 +2078,31 @@
       </div>
     </div>
 
+    <div id="page-unused-faculty" class="page-section page">
+      <div class="page-header">
+        <h1 class="page-title">Unscheduled Faculty</h1>
+        <p class="page-subtitle">Faculty registered in the system but not assigned to any class or section this semester.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Unscheduled Faculty</div>
+        <div class="unused-toolbar">
+          <button class="btn-sm primary" onclick="loadUnusedFaculty()">Check Unscheduled Faculty</button>
+        </div>
+        <div id="unusedFacultyList" class="unused-list">
+          <div class="empty-state">
+            <div class="empty-text">Click Check Unscheduled Faculty to scan current timetable data.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
 <!-- ── Create Account Modal ─────────────────────────────── -->
+<div id="toast"></div>
+
 <div class="modal-overlay" id="accountModal">
   <div class="modal">
     <div class="modal-title">Create Login Account</div>
@@ -2003,6 +2134,43 @@ let selectedBranch = null;
 let selectedYear   = null;
 let selectedFiles  = [];
 let allFaculty     = [];
+
+function showToast(message, isError = false) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'show' + (isError ? ' error' : '');
+  clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => { toast.className = ''; }, 3200);
+}
+
+// ── Auth Error Handler ──────────────────────────────────
+window.handleAuthError = function() {
+  // Session expired or user not authenticated
+  document.getElementById('dashScreen').classList.remove('active');
+  document.getElementById('loginScreen').classList.add('active');
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginError').style.display = 'block';
+  document.getElementById('loginError').textContent = 'Session expired. Please log in again.';
+};
+
+// ── Check Admin Session on Page Load ─────────────────────
+async function checkAdminSession() {
+  // Try to fetch faculty list — if it fails with 401, we're logged out
+  const { ok, status } = await apiFetch(CONFIG.API.ADMIN_FACULTY_LIST);
+  if (status === 401) {
+    // Not logged in, show login screen
+    document.getElementById('dashScreen').classList.remove('active');
+    document.getElementById('loginScreen').classList.add('active');
+  } else if (ok) {
+    // Already logged in, show dashboard
+    document.getElementById('loginScreen').classList.remove('active');
+    document.getElementById('dashScreen').classList.add('active');
+    loadOverview();
+    loadConflicts();
+    loadFaculty();
+  }
+}
 
 // ── Login ────────────────────────────────────────────────
 async function doLogin() {
@@ -2056,6 +2224,7 @@ function showPage(event, name) {
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
   event.currentTarget.classList.add('active');
+  if (name === 'unused-faculty') loadUnusedFaculty();
 }
 
 // ── Overview ─────────────────────────────────────────────
@@ -2223,6 +2392,25 @@ function renderFilesList() {
     </div>`).join('');
 }
 
+function resetUploadUi() {
+  selectedFiles = [];
+  renderFilesList();
+
+  const pw  = document.getElementById('progressWrap');
+  const pb  = document.getElementById('progressBar');
+  const pl  = document.getElementById('progressLabel');
+  const res = document.getElementById('uploadResult');
+
+  if (pw) pw.style.display = 'none';
+  if (pb) pb.style.width = '0%';
+  if (pl) pl.textContent = 'Uploading...';
+  if (res) {
+    res.style.display = 'none';
+    res.textContent = '';
+    res.className = 'upload-result';
+  }
+}
+
 async function doUpload() {
   // Validate
   if (!selectedBranch) { alert('Please select a branch first.'); return; }
@@ -2285,6 +2473,24 @@ async function doUpload() {
   setTimeout(() => { pw.style.display = 'none'; pb.style.width = '0%'; }, 2000);
 }
 
+async function resetTimetable() {
+  const confirmed = confirm('This will delete ALL timetable data. Faculty accounts and attendance will be preserved. Continue?');
+  if (!confirmed) return;
+
+  const { ok, data } = await apiFetch('/api/admin/reset-timetable', { method: 'POST' });
+  if (!ok || !data.success) {
+    showToast(data.error || 'Could not reset timetable data.', true);
+    return;
+  }
+
+  showToast(data.data?.message || 'Timetable data cleared. Faculty and attendance preserved.');
+  resetUploadUi();
+  loadOverview();
+  loadConflicts();
+  loadFaculty();
+  loadUnusedFaculty();
+}
+
 // ── Faculty ──────────────────────────────────────────────
 async function loadFaculty() {
   const { data } = await apiFetch(CONFIG.API.ADMIN_FACULTY_LIST);
@@ -2324,6 +2530,72 @@ function filterFaculty() {
 }
 
 // ── Account Modal ────────────────────────────────────────
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[ch]));
+}
+
+async function loadUnusedFaculty() {
+  const listEl = document.getElementById('unusedFacultyList');
+  listEl.innerHTML = `<div class="empty-state"><div class="empty-text">Checking unscheduled faculty...</div></div>`;
+
+  const { ok, data } = await apiFetch('/api/admin/faculty/unused');
+  if (!ok || !data.success) {
+    listEl.innerHTML = `<div class="empty-state"><div class="empty-text">Could not load unscheduled faculty.</div></div>`;
+    return;
+  }
+
+  const unused = data.data || [];
+  if (!unused.length) {
+    listEl.innerHTML = `<div class="empty-state"><div class="empty-text">All faculty are scheduled in current timetable ✓</div></div>`;
+    return;
+  }
+
+  listEl.innerHTML = unused.map(f => `
+    <div class="unused-card" id="unused-faculty-${f.id}">
+      <div>
+        <div class="unused-name">${escapeHtml(f.full_name)}</div>
+        <div class="unused-meta">
+          <span>${escapeHtml(f.department || '—')}</span>
+          <span>${escapeHtml(f.email || 'No login configured')}</span>
+        </div>
+      </div>
+      <button class="btn-sm danger-outline" data-disable-faculty="${f.id}" data-faculty-name="${escapeHtml(f.full_name)}">
+        Disable Login
+      </button>
+    </div>`).join('');
+}
+
+async function disableFacultyLogin(id, name) {
+  const confirmed = confirm(`Disable login for ${name}?`);
+  if (!confirmed) return;
+
+  const { ok, data } = await apiFetch(`/api/admin/faculty/${id}/disable-login`, { method: 'POST' });
+  if (!ok || !data.success) {
+    showToast(data.error || 'Could not disable faculty login.', true);
+    return;
+  }
+
+  document.getElementById(`unused-faculty-${id}`)?.remove();
+  showToast(data.data?.message || 'Faculty login disabled');
+  if (!document.querySelector('.unused-card')) {
+    document.getElementById('unusedFacultyList').innerHTML =
+      `<div class="empty-state"><div class="empty-text">All faculty are scheduled in current timetable ✓</div></div>`;
+  }
+  loadFaculty();
+}
+
+document.addEventListener('click', e => {
+  const btn = e.target.closest('[data-disable-faculty]');
+  if (!btn) return;
+  disableFacultyLogin(btn.dataset.disableFaculty, btn.dataset.facultyName);
+});
+
 function openAccountModal(id, name) {
   document.getElementById('modalFacultyId').value = id;
   document.getElementById('modalEmail').value     = '';
@@ -2370,6 +2642,10 @@ async function createAccount() {
 document.getElementById('accountModal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
+
+// ── Page Load ────────────────────────────────────────────
+// Check if already logged in
+checkAdminSession();
 </script>
 </body>
 </html>

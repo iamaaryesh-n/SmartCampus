@@ -26,6 +26,9 @@ const CONFIG = {
         FACULTY_MARK_ATTENDANCE:'/api/faculty/attendance',
         FACULTY_ATT_STATUS:     '/api/faculty/attendance/status',
 
+        // ── Shared attendance snapshot ─────────────────────
+        ATTENDANCE_TODAY:       '/api/attendance/today',
+
         // ── Student (public) ───────────────────────────────
         FACULTY_SEARCH:         '/api/faculty/search',
         FACULTY_WHERE_NOW:      '/api/faculty',           // + /{id}/where-now
@@ -81,5 +84,11 @@ async function apiFetch(path, options = {}) {
     }
     const res  = await fetch(url, merged);
     const data = await res.json();
+    // Handle 401 Unauthorized — session lost
+    if (res.status === 401) {
+        if (typeof window.handleAuthError === 'function') {
+            window.handleAuthError();
+        }
+    }
     return { ok: res.ok, status: res.status, data };
 }

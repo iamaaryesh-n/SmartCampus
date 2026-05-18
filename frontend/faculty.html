@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SmartCampus — Faculty Portal</title>
+<script src="config.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #f7f6f2;
+  --surface:    #ffffff;
+  --border:     #e8e5de;
+  --text:       #1a1917;
+  --muted:      #7a7873;
+  --faculty:    #2d52a0;
+  --facultybg:  #e8eef9;
+  --facultybdr: #a8bde8;
+  --student:    #1a6b4a;
+  --studentbg:  #e8f5ef;
+  --studentbdr: #a8d9c0;
+  --danger:     #c0392b;
+  --dangerbg:   #fdecea;
+  --dangerbdr:  #f5c6c2;
+  --warn:       #b45309;
+  --warnbg:     #fef3e2;
+  --warnbdr:    #f6d28d;
+  --indigo:     #5b54e8;
+  --indigobg:   #eeedfb;
+  --indigobdr:  #d4d1f7;
+  --fh: 'Plus Jakarta Sans', sans-serif;
+  --fm: 'JetBrains Mono', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--fh);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, #c9c6bd 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Toast ─── */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--text);
+  color: #fff;
+  font-family: var(--fm);
+  font-size: 12px;
+  padding: 10px 20px;
+  border-radius: 24px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 999;
+  white-space: nowrap;
+}
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+#toast.error { background: var(--danger); }
+
+/* ─── LOGIN SCREEN ─── */
+#login-screen {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 40px 36px;
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+  overflow: hidden;
+  animation: fadeup 0.45s ease both;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.06);
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--faculty);
+  border-radius: 22px 22px 0 0;
+}
+
+.login-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--fm);
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  margin-bottom: 28px;
+  transition: color 0.15s;
+}
+.login-back:hover { color: var(--faculty); }
+.login-back svg { width: 12px; height: 12px; }
+
+.login-icon {
+  width: 48px; height: 48px;
+  background: var(--facultybg);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.login-label {
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--faculty);
+  margin-bottom: 6px;
+}
+
+.login-title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.login-sub {
+  font-size: 13.5px;
+  color: var(--muted);
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+.field { margin-bottom: 16px; }
+
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: 0.2px;
+}
+
+.field input {
+  width: 100%;
+  padding: 11px 14px;
+  font-family: var(--fh);
+  font-size: 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.field input:focus {
+  border-color: var(--faculty);
+  box-shadow: 0 0 0 3px rgba(45,82,160,0.1);
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 12px;
+  background: var(--faculty);
+  color: #fff;
+  border: none;
+  border-radius: 11px;
+  font-family: var(--fh);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.btn-primary:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* ─── DASHBOARD ─── */
+#dashboard { display: none; position: relative; z-index: 1; min-height: 100vh; flex-direction: column; }
+#dashboard.active { display: flex; }
+
+/* Top Nav */
+.topnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 32px;
+  background: rgba(247,246,242,0.92);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  gap: 16px;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.brand-mark {
+  width: 30px; height: 30px;
+  background: var(--text);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.3px;
+}
+.brand-name span { color: var(--indigo); }
+
+/* Tab bar */
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  font-family: var(--fh);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.tab-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.tab-btn.active {
+  background: var(--surface);
+  color: var(--faculty);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+}
+.tab-btn:not(.active):hover { color: var(--text); }
+
+/* Nav right */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.faculty-chip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--facultybg);
+  border: 1px solid var(--facultybdr);
+  border-radius: 20px;
+  padding: 5px 12px 5px 8px;
+}
+
+.faculty-avatar {
+  width: 22px; height: 22px;
+  background: var(--faculty);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: var(--fm);
+  font-size: 9px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.faculty-chip-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--faculty);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  font-family: var(--fh);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-logout:hover { border-color: var(--danger); color: var(--danger); }
+.btn-logout svg { width: 13px; height: 13px; }
+
+/* ─── Main content ─── */
+.main-content {
+  flex: 1;
+  padding: 28px 32px;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ─── TAB VIEWS ─── */
+.tab-view { display: none; }
+.tab-view.active { display: block; animation: fadeup 0.3s ease both; }
+
+@keyframes fadeup {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Section headers ─── */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.section-title {
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+  color: var(--text);
+}
+
+.section-sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.chip {
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: var(--surface);
+}
+
+/* ─── Attendance Card ─── */
+.att-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 22px 24px;
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.att-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 18px 18px 0 0;
+}
+.att-card.present::before { background: var(--student); }
+.att-card.absent::before  { background: var(--danger); }
+.att-card.pending::before { background: var(--faculty); }
+
+.att-info { flex: 1; }
+
+.att-label {
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+.att-status-text {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.4px;
+}
+.att-card.present .att-status-text { color: var(--student); }
+.att-card.absent  .att-status-text { color: var(--danger); }
+.att-card.pending .att-status-text { color: var(--text); }
+
+.att-date {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.att-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.att-actions-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.att-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.att-marked-copy {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.att-marked-copy .att-status-text {
+  font-size: 17px;
+}
+
+.btn-att {
+  padding: 9px 18px;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  font-family: var(--fh);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-att svg { width: 14px; height: 14px; }
+
+.btn-present {
+  background: var(--student);
+  color: #fff;
+  border-color: var(--student);
+}
+.btn-present:hover { opacity: 0.88; transform: translateY(-1px); }
+
+.btn-absent {
+  background: var(--surface);
+  color: var(--danger);
+  border-color: var(--dangerbdr);
+}
+.btn-absent:hover { background: var(--dangerbg); }
+
+.att-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.att-badge.present { background: var(--studentbg); color: var(--student); border: 1px solid var(--studentbdr); }
+.att-badge.absent  { background: var(--dangerbg);  color: var(--danger);  border: 1px solid var(--dangerbdr); }
+.att-badge svg { width: 14px; height: 14px; }
+
+.att-btns {
+  display: flex;
+  gap: 8px;
+}
+
+/* Subtle "Tap to change" hint */
+.att-change-hint {
+  font-family: var(--fm);
+  font-size: 9.5px;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+  text-align: right;
+}
+
+.att-change-btn {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s ease, opacity 0.15s ease;
+}
+
+.att-change-btn:hover { color: var(--text); }
+.att-change-btn:disabled { cursor: not-allowed; opacity: 0.55; }
+
+/* Last-updated timestamp */
+.att-updated {
+  font-family: var(--fm);
+  font-size: 9.5px;
+  color: var(--muted);
+  text-align: right;
+}
+
+/* Active-state: present button when present is selected */
+.btn-att-active {
+  background: var(--student) !important;
+  color: #fff !important;
+  border-color: var(--student) !important;
+  box-shadow: 0 2px 8px rgba(26,107,74,0.25);
+}
+
+/* Active-state: absent button when absent is selected */
+.btn-att-active-absent {
+  background: var(--danger) !important;
+  color: #fff !important;
+  border-color: var(--danger) !important;
+  box-shadow: 0 2px 8px rgba(192,57,43,0.22);
+}
+
+/* Disabled state while request is in flight */
+.btn-att:disabled { opacity: 0.55; cursor: not-allowed; transform: none !important; }
+
+/* ─── Class Cards (Today) ─── */
+.classes-list { display: flex; flex-direction: column; gap: 10px; }
+
+.class-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  transition: box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.class-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); border-color: var(--facultybdr); }
+
+.class-slot-col {
+  flex-shrink: 0;
+  text-align: center;
+  width: 52px;
+}
+
+.slot-badge {
+  font-family: var(--fm);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--faculty);
+  background: var(--facultybg);
+  border: 1px solid var(--facultybdr);
+  border-radius: 7px;
+  padding: 3px 7px;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.slot-time {
+  font-family: var(--fm);
+  font-size: 9.5px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.class-body { flex: 1; min-width: 0; }
+
+.class-subject {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+  letter-spacing: -0.2px;
+}
+
+.class-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.meta-tag {
+  font-family: var(--fm);
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: var(--bg);
+}
+
+.meta-tag.section { color: var(--faculty); background: var(--facultybg); border-color: var(--facultybdr); }
+.meta-tag.lab     { color: var(--warn);    background: var(--warnbg);    border-color: var(--warnbdr);    }
+.meta-tag.batch   { color: var(--indigo);  background: var(--indigobg);  border-color: var(--indigobdr);  }
+
+.class-code {
+  font-family: var(--fm);
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* current class highlight */
+.class-card.current {
+  border-color: var(--facultybdr);
+  background: var(--facultybg);
+}
+.class-card.current .slot-badge { background: var(--faculty); color: #fff; border-color: var(--faculty); }
+
+.current-pill {
+  font-family: var(--fm);
+  font-size: 9px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--faculty);
+  background: var(--surface);
+  border: 1px solid var(--facultybdr);
+  border-radius: 20px;
+  padding: 2px 8px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+/* empty state */
+.empty-state {
+  text-align: center;
+  padding: 52px 24px;
+  color: var(--muted);
+}
+
+.empty-icon {
+  width: 56px; height: 56px;
+  background: var(--facultybg);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.empty-sub {
+  font-size: 13.5px;
+  line-height: 1.6;
+}
+
+/* ─── WEEK SCHEDULE ─── */
+.week-grid-wrap {
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.week-grid {
+  min-width: 680px;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.week-grid th {
+  padding: 12px 10px;
+  font-family: var(--fm);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  white-space: nowrap;
+}
+
+.week-grid th:first-child {
+  width: 60px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+
+.week-grid td {
+  padding: 8px 10px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+  min-width: 110px;
+}
+
+.week-grid td:first-child {
+  text-align: center;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+}
+
+.week-grid tr:last-child td { border-bottom: none; }
+.week-grid td:last-child { border-right: none; }
+.week-grid th:last-child { border-right: none; }
+
+.slot-label-cell {
+  font-family: var(--fm);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--faculty);
+  display: block;
+  margin-bottom: 2px;
+}
+
+.slot-time-cell {
+  font-family: var(--fm);
+  font-size: 9px;
+  color: var(--muted);
+  display: block;
+}
+
+.grid-cell {
+  background: transparent;
+  border-radius: 8px;
+  padding: 7px 8px;
+  font-size: 12px;
+}
+
+.grid-cell.has-class {
+  background: var(--facultybg);
+  border: 1px solid var(--facultybdr);
+}
+
+.grid-cell.has-lab {
+  background: var(--warnbg);
+  border: 1px solid var(--warnbdr);
+}
+
+.grid-cell.is-now {
+  background: var(--faculty);
+  border: 1px solid var(--faculty);
+  color: #fff;
+}
+
+.grid-cell.empty {
+  color: var(--muted);
+  font-family: var(--fm);
+  font-size: 11px;
+  text-align: center;
+  padding: 10px 0;
+}
+
+.gc-subject {
+  font-weight: 700;
+  font-size: 11.5px;
+  color: var(--text);
+  margin-bottom: 3px;
+  line-height: 1.3;
+}
+.grid-cell.is-now .gc-subject { color: #fff; }
+
+.gc-meta {
+  font-family: var(--fm);
+  font-size: 9px;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.grid-cell.is-now .gc-meta { color: rgba(255,255,255,0.75); }
+
+.gc-section-tag {
+  background: rgba(45,82,160,0.12);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+.grid-cell.is-now .gc-section-tag { background: rgba(255,255,255,0.2); }
+
+/* ─── Mobile accordion for week (shown < 680px) ─── */
+.week-accordion { display: none; }
+
+.day-accordion {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.day-acc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.day-acc-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.day-acc-count {
+  font-family: var(--fm);
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 2px 8px;
+}
+
+.day-acc-chevron {
+  color: var(--muted);
+  transition: transform 0.2s;
+}
+.day-accordion.open .day-acc-chevron { transform: rotate(180deg); }
+
+.day-acc-body {
+  display: none;
+  padding: 0 14px 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.day-accordion.open .day-acc-body { display: block; }
+
+/* ─── PROFILE TAB ─── */
+.profile-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 28px;
+  max-width: 480px;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--faculty);
+  border-radius: 18px 18px 0 0;
+}
+
+.profile-avatar-lg {
+  width: 64px; height: 64px;
+  background: var(--faculty);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 18px;
+  letter-spacing: -1px;
+}
+
+.profile-name {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.profile-dept {
+  font-size: 13.5px;
+  color: var(--muted);
+  margin-bottom: 22px;
+}
+
+.profile-fields { display: flex; flex-direction: column; gap: 12px; }
+
+.profile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  background: var(--bg);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.pf-label {
+  font-family: var(--fm);
+  font-size: 9.5px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pf-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.profile-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+  padding: 11px 14px;
+  background: var(--indigobg);
+  border: 1px solid var(--indigobdr);
+  border-radius: 10px;
+  font-size: 12.5px;
+  color: var(--indigo);
+}
+.profile-note svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* ─── Skeleton loader ─── */
+.skeleton {
+  background: linear-gradient(90deg, var(--border) 25%, var(--bg) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 680px) {
+  .topnav { padding: 12px 16px; gap: 10px; }
+  .brand-name { display: none; }
+  .faculty-chip-name { max-width: 90px; }
+  .tab-btn span { display: none; }
+  .tab-btn { padding: 7px 10px; }
+  .main-content { padding: 18px 16px; }
+  .week-grid-wrap { display: none; }
+  .week-accordion { display: block; }
+  .att-card { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 480px) {
+  .login-card { padding: 28px 20px; }
+  .btn-logout span { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ─── Toast ─── -->
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <a class="login-back" href="landing.html">
+      <svg viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back to SmartCampus
+    </a>
+
+    <div class="login-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="8" r="4" stroke="#2d52a0" stroke-width="1.8"/>
+        <path d="M4 20c0-4 3.58-7 8-7s8 3 8 7" stroke="#2d52a0" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="login-label">Faculty Portal</div>
+    <div class="login-title">Welcome back</div>
+    <p class="login-sub">Sign in with your faculty email and password to access your schedule.</p>
+
+    <div class="field">
+      <label for="login-email">Email address</label>
+      <input type="email" id="login-email" placeholder="you@college.edu" autocomplete="email" />
+    </div>
+    <div class="field">
+      <label for="login-password">Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+
+    <button class="btn-primary" id="login-btn">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 7.5h9M8 4l3.5 3.5L8 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Sign In
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     DASHBOARD
+══════════════════════════════════════════ -->
+<div id="dashboard">
+
+  <!-- Top Nav -->
+  <nav class="topnav">
+    <a class="nav-brand" href="landing.html">
+      <div class="brand-mark">
+        <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+          <rect x="2" y="2" width="6" height="6" rx="1.5" fill="white"/>
+          <rect x="10" y="2" width="6" height="6" rx="1.5" fill="white" opacity="0.5"/>
+          <rect x="2" y="10" width="6" height="6" rx="1.5" fill="white" opacity="0.5"/>
+          <rect x="10" y="10" width="6" height="6" rx="1.5" fill="white"/>
+        </svg>
+      </div>
+      <span class="brand-name">Smart<span>Campus</span></span>
+    </a>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="today">
+        <svg viewBox="0 0 15 15" fill="none"><rect x="2" y="2" width="11" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 2V1M10 2V1M2 6h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span>Today</span>
+      </button>
+      <button class="tab-btn" data-tab="week">
+        <svg viewBox="0 0 15 15" fill="none"><path d="M1 4h13M1 8h13M1 12h13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span>Week</span>
+      </button>
+      <button class="tab-btn" data-tab="profile">
+        <svg viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M2 14c0-3 2.5-5 5.5-5s5.5 2 5.5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span>Profile</span>
+      </button>
+    </div>
+
+    <div class="nav-right">
+      <div class="faculty-chip">
+        <div class="faculty-avatar" id="nav-avatar">F</div>
+        <span class="faculty-chip-name" id="nav-name">Faculty</span>
+      </div>
+      <button class="btn-logout" id="logout-btn">
+        <svg viewBox="0 0 15 15" fill="none"><path d="M5 13H3a1 1 0 01-1-1V3a1 1 0 011-1h2M10 10l3-3-3-3M13 7H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Logout</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ─── Main Content ─── -->
+  <div class="main-content">
+
+    <!-- ══ TODAY TAB ══ -->
+    <div class="tab-view active" id="tab-today">
+
+      <!-- Attendance card -->
+      <div class="att-card pending" id="att-card">
+        <div class="att-info">
+          <div class="att-label">Today's Attendance</div>
+          <div class="att-status-text" id="att-status-text">Not marked yet</div>
+          <div class="att-date" id="att-date">—</div>
+        </div>
+        <div class="att-actions" id="att-actions">
+          <button class="btn-att btn-present" data-status="present">
+            <svg viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Present
+          </button>
+          <button class="btn-att btn-absent" data-status="absent">
+            <svg viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            Absent
+          </button>
+        </div>
+      </div>
+
+      <!-- Today's classes -->
+      <div class="section-header">
+        <div>
+          <div class="section-title">Today's Classes</div>
+          <div class="section-sub" id="today-day-label">Loading…</div>
+        </div>
+        <span class="chip" id="today-count">— classes</span>
+      </div>
+
+      <div id="today-classes-list" class="classes-list">
+        <!-- skeleton -->
+        <div style="height:80px;border-radius:14px;" class="skeleton"></div>
+        <div style="height:80px;border-radius:14px;" class="skeleton"></div>
+      </div>
+    </div>
+
+    <!-- ══ WEEK TAB ══ -->
+    <div class="tab-view" id="tab-week">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Weekly Schedule</div>
+          <div class="section-sub">Full timetable — Monday to Saturday</div>
+        </div>
+      </div>
+
+      <!-- Desktop grid -->
+      <div class="week-grid-wrap" id="week-grid-wrap">
+        <table class="week-grid" id="week-table">
+          <thead>
+            <tr>
+              <th>Slot</th>
+              <th>Monday</th>
+              <th>Tuesday</th>
+              <th>Wednesday</th>
+              <th>Thursday</th>
+              <th>Friday</th>
+              <th>Saturday</th>
+            </tr>
+          </thead>
+          <tbody id="week-tbody">
+            <tr><td colspan="7" style="padding:40px;text-align:center;color:var(--muted);font-size:13px;">Loading schedule…</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Mobile accordion -->
+      <div class="week-accordion" id="week-accordion"></div>
+    </div>
+
+    <!-- ══ PROFILE TAB ══ -->
+    <div class="tab-view" id="tab-profile">
+      <div class="section-header">
+        <div>
+          <div class="section-title">My Profile</div>
+          <div class="section-sub">Your account information</div>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="profile-avatar-lg" id="profile-avatar">?</div>
+        <div class="profile-name" id="profile-name">—</div>
+        <div class="profile-dept" id="profile-dept">—</div>
+        <div class="profile-fields">
+          <div class="profile-field">
+            <span class="pf-label">Email address</span>
+            <span class="pf-value" id="profile-email">—</span>
+          </div>
+          <div class="profile-field">
+            <span class="pf-label">Department</span>
+            <span class="pf-value" id="profile-dept2">—</span>
+          </div>
+          <div class="profile-field">
+            <span class="pf-label">Faculty ID</span>
+            <span class="pf-value" id="profile-id">—</span>
+          </div>
+        </div>
+        <div class="profile-note">
+          <svg viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M7 6.5v3M7 4.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          To update your email or password, contact your campus admin.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+</div><!-- /dashboard -->
+
+<script>
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+const state = {
+  faculty: null,
+  todayClasses: [],
+  weekSchedule: [],
+  attendanceStatus: null,   // 'present' | 'absent' | null
+  attendanceMarkedAt: null, // "YYYY-MM-DD HH:MM:SS" from server
+  attendanceEditMode: false,
+};
+
+const DAYS  = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const SLOTS = ['L1','L2','L3','L4','L5','L6'];
+const TIMES = { L1:'10:15-11:15', L2:'11:15-12:15', L3:'12:45-13:45', L4:'13:45-14:45', L5:'14:45-15:45', L6:'15:45-16:45' };
+
+/* ═══════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════ */
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (isError ? ' error' : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = ''; }, 3200);
+}
+
+function initials(name) {
+  if (!name) return '?';
+  const parts = name.trim().split(' ');
+  return (parts[0][0] + (parts[parts.length - 1][0] || '')).toUpperCase();
+}
+
+function todayName() {
+  return new Date().toLocaleDateString('en-US', { weekday: 'long' });
+}
+
+function todayLabel() {
+  return new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+}
+
+function persistFacultySession(faculty) {
+  try {
+    localStorage.setItem('facultySession', JSON.stringify({
+      id: faculty.id,
+      name: faculty.full_name || faculty.name || 'Faculty',
+      email: faculty.email || ''
+    }));
+  } catch { /* localStorage can be unavailable in private/locked-down browsers */ }
+}
+
+function clearFacultySession() {
+  try {
+    localStorage.removeItem('facultySession');
+  } catch { /* silent */ }
+}
+
+function currentSlot() {
+  const now = new Date();
+  const t = now.getHours() * 60 + now.getMinutes();
+  const ranges = { L1:[615,675], L2:[675,735], L3:[765,825], L4:[825,885], L5:[885,945], L6:[945,1005] };
+  for (const [slot, [s, e]] of Object.entries(ranges)) {
+    if (t >= s && t < e) return slot;
+  }
+  return null;
+}
+
+/* ═══════════════════════════════════════════
+   AUTH
+═══════════════════════════════════════════ */
+async function checkSession() {
+  try {
+    const { ok, data } = await apiFetch(CONFIG.API.FACULTY_ME);
+    if (ok && data.success) {
+      state.faculty = data.data;
+      persistFacultySession(state.faculty);
+      showDashboard();
+      loadAll();
+    } else {
+      showLogin();
+    }
+  } catch {
+    showLogin();
+  }
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw    = document.getElementById('login-password').value.trim();
+
+  if (!email || !pw) { showToast('Please enter email and password', true); return; }
+
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" stroke-dasharray="30 60" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="0.8s" repeatCount="indefinite"/></circle></svg> Signing in…';
+
+  let response;
+  try {
+    response = await apiFetch(CONFIG.API.FACULTY_LOGIN, {
+      method: 'POST',
+      body: { email, password: pw }
+    });
+  } catch {
+    showToast('Connection error', true);
+    btn.disabled = false;
+    btn.innerHTML = 'Sign In';
+    return;
+  }
+
+  const { ok, data } = response;
+  if (!ok || !data.success) {
+    showToast(data.error || 'Invalid credentials', true);
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 7.5h9M8 4l3.5 3.5L8 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Sign In';
+    return;
+  }
+
+  state.faculty = {
+    id: data.data.id,
+    full_name: data.data.name || data.data.full_name || 'Faculty',
+    name: data.data.name || data.data.full_name || 'Faculty',
+    email
+  };
+  persistFacultySession(state.faculty);
+  showDashboard();
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M2 7.5h9M8 4l3.5 3.5L8 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Sign In';
+
+  loadAll();
+  refreshFacultyProfile();
+}
+
+async function refreshFacultyProfile() {
+  try {
+    const { ok, data } = await apiFetch(CONFIG.API.FACULTY_ME);
+    if (ok && data.success) {
+      state.faculty = data.data;
+      persistFacultySession(state.faculty);
+      showDashboard();
+    }
+  } catch { /* Profile refresh is optional after auth succeeds. */ }
+}
+
+async function doLogout() {
+  await apiFetch(CONFIG.API.FACULTY_LOGOUT, { method: 'POST' });
+  state.faculty = null;
+  state.todayClasses = [];
+  state.weekSchedule = [];
+  state.attendanceStatus = null;
+  state.attendanceMarkedAt = null;
+  state.attendanceEditMode = false;
+  clearFacultySession();
+  showLogin();
+}
+
+// Allow Enter key on login
+document.getElementById('login-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+document.getElementById('login-email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('login-password').focus();
+});
+
+/* ═══════════════════════════════════════════
+   SHOW / HIDE SCREENS
+═══════════════════════════════════════════ */
+function showLogin() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('dashboard').classList.remove('active');
+}
+
+function showDashboard() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard').classList.add('active');
+
+  const f = state.faculty;
+  if (f) {
+    const name = f.full_name || f.name || 'Faculty';
+    document.getElementById('nav-name').textContent    = name;
+    document.getElementById('nav-avatar').textContent  = initials(name);
+    document.getElementById('profile-name').textContent  = name;
+    document.getElementById('profile-dept').textContent  = f.department || '—';
+    document.getElementById('profile-dept2').textContent = f.department || '—';
+    document.getElementById('profile-email').textContent = f.email || '—';
+    document.getElementById('profile-id').textContent    = '#' + (f.id || '—');
+    document.getElementById('profile-avatar').textContent = initials(name);
+  }
+}
+
+/* ═══════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════ */
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-view').forEach(v => v.classList.toggle('active', v.id === 'tab-' + tab));
+}
+
+/* ═══════════════════════════════════════════
+   LOAD ALL DATA
+═══════════════════════════════════════════ */
+async function loadAll() {
+  await Promise.allSettled([loadAttendance(), loadToday(), loadWeek()]);
+}
+
+/* ─── Attendance ─── */
+async function loadAttendance() {
+  try {
+    const { ok, data } = await apiFetch(CONFIG.API.FACULTY_ATT_STATUS);
+    if (ok && data.success) {
+      state.attendanceStatus   = data.data?.status    || null;
+      state.attendanceMarkedAt = data.data?.marked_at || null;
+      state.attendanceEditMode = false;
+      renderAttCard();
+    } else {
+      state.attendanceStatus   = null;
+      state.attendanceMarkedAt = null;
+      state.attendanceEditMode = false;
+      renderAttCard();
+    }
+  } catch {
+    state.attendanceStatus   = null;
+    state.attendanceMarkedAt = null;
+    state.attendanceEditMode = false;
+    renderAttCard();
+  }
+}
+
+function renderAttCard() {
+  const card    = document.getElementById('att-card');
+  const text    = document.getElementById('att-status-text');
+  const actions = document.getElementById('att-actions');
+  const dateEl  = document.getElementById('att-date');
+
+  dateEl.textContent = todayLabel();
+
+  const s        = state.attendanceStatus;       // 'present' | 'absent' | null
+  const markedAt = state.attendanceMarkedAt;     // e.g. "2025-05-18 09:42:11" | null
+
+  card.classList.remove('present', 'absent', 'pending');
+
+  // ── Status text + card colour ──────────────────────────────────────────────
+  if (s === 'present') {
+    card.classList.add('present');
+    text.textContent = '✓ Marked Present';
+  } else if (s === 'absent') {
+    card.classList.add('absent');
+    text.textContent = '✕ Marked Absent';
+  } else {
+    card.classList.add('pending');
+    text.textContent = 'Not marked yet';
+  }
+
+  // ── Last-updated hint (shown after first marking) ─────────────────────────
+  let updatedHint = '';
+  if (markedAt) {
+    // markedAt is "YYYY-MM-DD HH:MM:SS" from SQLite
+    const timePart = markedAt.split(' ')[1] || '';
+    const hhmm     = timePart.slice(0, 5);          // "09:42"
+    updatedHint    = `<div class="att-updated">Last updated at ${hhmm}</div>`;
+  }
+
+  if (s && !state.attendanceEditMode) {
+    actions.innerHTML = `
+      <div class="att-actions-inner">
+        <div class="att-actions-row">
+          <div class="att-badge ${s}">
+            <svg viewBox="0 0 14 14" fill="none"><path d="${s === 'present' ? 'M2 7l4 4 6-6' : 'M3 3l8 8M11 3l-8 8'}" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            ${s === 'present' ? 'Present' : 'Absent'}
+          </div>
+          <button type="button" class="att-change-btn" data-action="att-change">Change</button>
+        </div>
+        ${updatedHint}
+      </div>`;
+    return;
+  }
+
+  actions.innerHTML = `
+    <div class="att-actions-inner">
+      <div class="att-btns">
+        <button class="btn-att btn-present ${s === 'present' ? 'btn-att-active' : ''}" data-status="present">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Present
+        </button>
+        <button class="btn-att btn-absent ${s === 'absent' ? 'btn-att-active-absent' : ''}" data-status="absent">
+          <svg viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          Absent
+        </button>
+      </div>
+      ${s ? `<div class="att-change-hint">Tap to change</div>` : ''}
+      ${updatedHint}
+    </div>`;
+}
+
+async function markAttendance(status) {
+  // Prevent double-tap: disable buttons while request is in flight
+  document.querySelectorAll('#att-actions [data-status]').forEach(b => b.disabled = true);
+
+  try {
+    const { ok, data } = await apiFetch(CONFIG.API.FACULTY_MARK_ATTENDANCE, {
+      method: 'POST',
+      body: { status }
+    });
+    if (ok && data.success) {
+      const prev = state.attendanceStatus;
+      state.attendanceStatus    = status;
+      state.attendanceMarkedAt  = data.data?.marked_at || new Date().toISOString().replace('T',' ').slice(0,19);
+      state.attendanceEditMode  = false;
+      renderAttCard();
+      if (prev && prev !== status) {
+        showToast(status === 'present' ? '↺ Changed to Present' : '↺ Changed to Absent');
+      } else {
+        showToast(status === 'present' ? '✓ Marked present for today' : 'Marked absent for today');
+      }
+    } else {
+      showToast(data.error || 'Could not mark attendance', true);
+    }
+  } catch {
+    showToast('Connection error', true);
+  }
+
+  // Re-enable after response (renderAttCard already replaced them, but safety net)
+  document.querySelectorAll('#att-actions [data-status]').forEach(b => b.disabled = false);
+}
+
+/* ─── Today's classes ─── */
+async function loadToday() {
+  document.getElementById('today-day-label').textContent = todayLabel();
+
+  try {
+    const { ok, data } = await apiFetch(CONFIG.API.FACULTY_TODAY);
+    if (ok && data.success) {
+      state.todayClasses = data.data?.schedule || [];
+      renderToday();
+    } else {
+      document.getElementById('today-classes-list').innerHTML = emptyState('No data', 'Could not load today\'s classes.');
+    }
+  } catch {
+    document.getElementById('today-classes-list').innerHTML = emptyState('Connection error', 'Please check your connection and reload.');
+  }
+}
+
+function renderToday() {
+  const list = document.getElementById('today-classes-list');
+  const classes = state.todayClasses;
+  const curSlot = currentSlot();
+
+  document.getElementById('today-count').textContent = classes.length + (classes.length === 1 ? ' class' : ' classes');
+
+  if (!classes.length) {
+    list.innerHTML = emptyState(
+      'Free day 🎉',
+      'You have no scheduled classes today. Enjoy your day!'
+    );
+    return;
+  }
+
+  list.innerHTML = classes.map(c => {
+    const isCurrent = c.slot === curSlot;
+    return `
+      <div class="class-card ${isCurrent ? 'current' : ''}">
+        <div class="class-slot-col">
+          <span class="slot-badge">${c.slot}</span>
+          <span class="slot-time">${(TIMES[c.slot] || c.time_range || '').replace('-','–')}</span>
+        </div>
+        <div class="class-body">
+          <div class="class-subject">
+            ${c.subject_name || '—'}
+            ${isCurrent ? '<span class="current-pill">NOW</span>' : ''}
+          </div>
+          <div class="class-meta">
+            <span class="meta-tag section">${c.section_name || '—'} · ${c.year ? 'Y'+c.year : ''}</span>
+            ${c.batch && c.batch !== 'ALL' ? `<span class="meta-tag batch">${c.batch}</span>` : ''}
+            ${Boolean(c.is_lab) ? `<span class="meta-tag lab">Lab</span>` : ''}
+            ${c.room_no ? `<span class="meta-tag">${c.room_no}</span>` : ''}
+          </div>
+          ${c.subject_code ? `<div class="class-code">${c.subject_code}${c.lab_code ? ' · ' + c.lab_code : ''}</div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function emptyState(title, sub) {
+  return `<div class="empty-state">
+    <div class="empty-icon">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <rect x="3" y="3" width="20" height="20" rx="4" stroke="#2d52a0" stroke-width="1.8"/>
+        <path d="M9 13h8M13 9v8" stroke="#2d52a0" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="empty-title">${title}</div>
+    <div class="empty-sub">${sub}</div>
+  </div>`;
+}
+
+/* ─── Week schedule ─── */
+async function loadWeek() {
+  try {
+    const { ok, data } = await apiFetch(CONFIG.API.FACULTY_SCHEDULE);
+    if (ok && data.success) {
+      state.weekSchedule = data.data || [];
+      renderWeek();
+    } else {
+      state.weekSchedule = [];
+      renderWeek();
+    }
+  } catch {
+    state.weekSchedule = [];
+    renderWeek();
+  }
+}
+
+function renderWeek() {
+  const schedule = state.weekSchedule;
+  const curSlot  = currentSlot();
+  const curDay   = todayName();
+
+  // Build lookup: schedule[day][slot] = array of entries
+  const lookup = {};
+  for (const day of DAYS) { lookup[day] = {}; for (const s of SLOTS) lookup[day][s] = []; }
+  for (const row of schedule) {
+    if (lookup[row.day] && lookup[row.day][row.slot] !== undefined) {
+      lookup[row.day][row.slot].push(row);
+    }
+  }
+
+  /* ── Desktop table ── */
+  const tbody = document.getElementById('week-tbody');
+  tbody.innerHTML = SLOTS.map(slot => {
+    const isCurrentSlot = slot === curSlot;
+    const cells = DAYS.map(day => {
+      const entries = lookup[day][slot];
+      const isNow   = isCurrentSlot && day === curDay;
+
+      if (!entries.length) {
+        return `<td><div class="grid-cell empty">—</div></td>`;
+      }
+
+      // Group by subject + section + lab type to avoid merging different batches/sections
+      const grouped = {};
+      for (const e of entries) {
+        const key = (e.subject_code || e.subject_name || '?') + '|' + (e.section_name || '') + '|' + Boolean(e.is_lab);
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(e);
+      }
+
+      const cellsHtml = Object.entries(grouped).map(([groupKey, rows]) => {
+        const r = rows[0];
+        const subj = r.subject_name || r.subject_code || '?';
+        const batches = rows.map(x => x.batch).filter(b => b && b !== 'ALL');
+        const batchStr = batches.length ? batches.join('+') : '';
+        const isLab = Boolean(r.is_lab);
+        return `<div class="grid-cell ${isNow ? 'is-now' : (isLab ? 'has-lab' : 'has-class')}">
+          <div class="gc-subject">${subj}</div>
+          <div class="gc-meta">
+            <span class="gc-section-tag">${r.section_name || ''}</span>
+            ${batchStr ? `<span>${batchStr}</span>` : ''}
+            ${isLab ? `<span>Lab</span>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+
+      return `<td>${cellsHtml}</td>`;
+    }).join('');
+
+    return `<tr>
+      <td>
+        <span class="slot-label-cell">${slot}</span>
+        <span class="slot-time-cell">${(TIMES[slot]||'').replace('-','–')}</span>
+      </td>
+      ${cells}
+    </tr>`;
+  }).join('');
+
+  /* ── Mobile accordion ── */
+  const acc = document.getElementById('week-accordion');
+  acc.innerHTML = DAYS.map(day => {
+    const dayEntries = SLOTS.flatMap(slot => lookup[day][slot].map(e => ({ ...e, slot })));
+    const uniqueSlots = [...new Set(dayEntries.map(e => e.slot))];
+    const count = uniqueSlots.length;
+
+    const rowsHtml = count === 0
+      ? `<div class="empty-state" style="padding:24px 0">
+          <div class="empty-sub">No classes scheduled</div>
+         </div>`
+      : SLOTS.filter(s => lookup[day][s].length).map(slot => {
+          const entries = lookup[day][slot];
+          return entries.map(c => `
+            <div class="class-card" style="margin-bottom:8px">
+              <div class="class-slot-col">
+                <span class="slot-badge">${slot}</span>
+                <span class="slot-time">${(TIMES[slot]||'').replace('-','–')}</span>
+              </div>
+              <div class="class-body">
+                <div class="class-subject">${c.subject_name || '—'}</div>
+                <div class="class-meta">
+                  <span class="meta-tag section">${c.section_name || '—'}</span>
+                  ${c.batch && c.batch !== 'ALL' ? `<span class="meta-tag batch">${c.batch}</span>` : ''}
+                  ${Boolean(c.is_lab) ? `<span class="meta-tag lab">Lab</span>` : ''}
+                </div>
+              </div>
+            </div>`).join('');
+        }).join('');
+
+    return `<div class="day-accordion ${day === curDay ? 'open' : ''}" id="acc-${day}">
+      <div class="day-acc-header" data-toggle-day="${day}">
+        <span class="day-acc-name">${day}</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="day-acc-count">${count} class${count !== 1 ? 'es' : ''}</span>
+          <svg class="day-acc-chevron" width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M3 5l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="day-acc-body">${rowsHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleAcc(day) {
+  document.getElementById('acc-' + day).classList.toggle('open');
+}
+
+/* ═══════════════════════════════════════════
+   EVENT LISTENERS
+═══════════════════════════════════════════ */
+// Login button
+const loginBtn = document.getElementById('login-btn');
+if (loginBtn) {
+  loginBtn.addEventListener('click', doLogin);
+}
+
+// Logout button
+const logoutBtn = document.getElementById('logout-btn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', doLogout);
+}
+
+// Tab buttons
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    if (tab) switchTab(tab);
+  });
+});
+
+// Day accordion headers
+document.addEventListener('click', (e) => {
+  const header = e.target.closest('[data-toggle-day]');
+  if (header) {
+    const day = header.dataset.toggleDay;
+    toggleAcc(day);
+  }
+});
+
+// Attendance buttons (delegated)
+document.addEventListener('click', (e) => {
+  const changeBtn = e.target.closest('[data-action="att-change"]');
+  if (changeBtn) {
+    state.attendanceEditMode = true;
+    renderAttCard();
+    return;
+  }
+
+  const btn = e.target.closest('[data-status]');
+  if (btn) {
+    markAttendance(btn.dataset.status);
+  }
+});
+
+/* ═══════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════ */
+checkSession();
+</script>
+</body>
+</html>
